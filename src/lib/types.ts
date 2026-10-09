@@ -13,13 +13,10 @@ export type Profile = {
   weekly_focus_goal_minutes: number;
   streaks_enabled: boolean;
   share_stats: boolean;
-<<<<<<< HEAD
   /** Objetivo diario de horas productivas (minutos). Ausente hasta aplicar la migración de disciplina. */
   daily_goal_minutes?: number | null;
-=======
   /** Solo existe tras la migración de microtareas. */
   quick_tasks_carry_over?: boolean;
->>>>>>> 20c3163 (Microtareas en el inicio, horario semanal e ideas para crecer)
 };
 
 export type Category = {
