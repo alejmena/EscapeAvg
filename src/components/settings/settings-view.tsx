@@ -12,6 +12,7 @@ import { ErrorText, Field, Input, Select } from "@/components/ui/form";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useAction } from "@/components/tasks/use-action";
 import { WEEKDAY_NAME } from "@/lib/format";
+import { GoalPicker } from "@/components/discipline/goal-picker";
 
 type ProfileForm = {
   display_name: string;
@@ -22,7 +23,19 @@ type ProfileForm = {
   pomodoro_settings: PomodoroSettings;
 };
 
-export function SettingsView({ email, profile, categories }: { email: string; profile: ProfileForm; categories: Category[] }) {
+export function SettingsView({
+  email,
+  profile,
+  categories,
+  goalMinutes,
+  ready,
+}: {
+  email: string;
+  profile: ProfileForm;
+  categories: Category[];
+  goalMinutes: number;
+  ready: boolean;
+}) {
   const [p, setP] = useState(profile);
   const [saved, setSaved] = useState(false);
   const { run, pending, error } = useAction();
@@ -39,6 +52,7 @@ export function SettingsView({ email, profile, categories }: { email: string; pr
   return (
     <div className="max-w-3xl space-y-6">
       <PageHeader title="Ajustes" subtitle={email} />
+      <GoalPicker goalMinutes={goalMinutes} ready={ready} />
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -113,7 +127,7 @@ export function SettingsView({ email, profile, categories }: { email: string; pr
         </div>
       </form>
 
-      <CategoriesCard categories={categories} />
+      <CategoriesCard categories={categories} ready={ready} />
 
       <Card>
         <CardTitle>Privacidad</CardTitle>
@@ -130,16 +144,20 @@ export function SettingsView({ email, profile, categories }: { email: string; pr
   );
 }
 
-function CategoriesCard({ categories }: { categories: Category[] }) {
+function CategoriesCard({ categories, ready }: { categories: Category[]; ready: boolean }) {
   const [name, setName] = useState("");
   const [color, setColor] = useState("#6366f1");
   const { run, pending, error } = useAction();
   return (
     <Card>
       <CardTitle>Categorías</CardTitle>
+      <p className="mb-3 text-sm text-muted">
+        Las horas de una categoría cuentan para tu rango si está marcada como desarrollo. Desmárcala para tiempo que no quieres contar (ocio,
+        comidas, recados).
+      </p>
       <ul className="mb-4 space-y-2">
         {categories.map((c) => (
-          <CategoryRow key={c.id} category={c} />
+          <CategoryRow key={c.id} category={c} ready={ready} />
         ))}
       </ul>
       <form
@@ -160,7 +178,8 @@ function CategoriesCard({ categories }: { categories: Category[] }) {
   );
 }
 
-function CategoryRow({ category }: { category: Category }) {
+function CategoryRow({ category, ready }: { category: Category; ready: boolean }) {
+  const [counts, setCounts] = useState(category.counts_as_development !== false);
   const [name, setName] = useState(category.name);
   const [color, setColor] = useState(category.color);
   const { run, error } = useAction();
@@ -178,6 +197,20 @@ function CategoryRow({ category }: { category: Category }) {
         aria-label={`Color de ${category.name}`}
       />
       <Input value={name} maxLength={40} onChange={(e) => setName(e.target.value)} onBlur={() => save()} className="h-9" aria-label="Nombre" />
+      {ready && (
+        <label className="flex shrink-0 items-center gap-1.5 text-xs text-muted" title="Cuenta para tus horas de desarrollo">
+          <input
+            type="checkbox"
+            checked={counts}
+            onChange={(e) => {
+              setCounts(e.target.checked);
+              run(() => updateCategory(category.id, { name: name.trim() || category.name, color, counts_as_development: e.target.checked }));
+            }}
+            aria-label={`${category.name} cuenta como desarrollo`}
+          />
+          <span className="hidden sm:inline">Desarrollo</span>
+        </label>
+      )}
       <Button
         variant="ghost"
         size="icon"

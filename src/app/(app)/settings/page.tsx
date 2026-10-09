@@ -3,12 +3,13 @@ import { requireUser } from "@/lib/auth";
 import { normalizePomodoro } from "@/lib/domain/timer";
 import type { Category } from "@/lib/types";
 import { SettingsView } from "@/components/settings/settings-view";
+import { dailyGoal, isDisciplineReady } from "@/lib/data/discipline";
 
 export const metadata: Metadata = { title: "Ajustes" };
 
 export default async function SettingsPage() {
   const { supabase, profile, user } = await requireUser();
-  const { data } = await supabase.from("categories").select("*").order("position");
+  const [{ data }, ready] = await Promise.all([supabase.from("categories").select("*").order("position"), isDisciplineReady(supabase)]);
   return (
     <SettingsView
       email={user.email ?? ""}
@@ -21,6 +22,8 @@ export default async function SettingsPage() {
         pomodoro_settings: normalizePomodoro(profile.pomodoro_settings),
       }}
       categories={(data ?? []) as Category[]}
+      goalMinutes={dailyGoal(profile)}
+      ready={ready}
     />
   );
 }

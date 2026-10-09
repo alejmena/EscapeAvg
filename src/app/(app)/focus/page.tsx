@@ -4,14 +4,17 @@ import { addDays } from "@/lib/domain/dates";
 import { normalizePomodoro } from "@/lib/domain/timer";
 import type { FocusSession, Task } from "@/lib/types";
 import { FocusClient, type HistoryItem } from "@/components/focus/focus-client";
+import { getCategories, isDisciplineReady } from "@/lib/data/discipline";
+import { quoteOfDay } from "@/lib/domain/quotes";
 
 export const metadata: Metadata = { title: "Concentración" };
 
 export default async function FocusPage({ searchParams }: { searchParams: Promise<{ task?: string; just?: string }> }) {
   const sp = await searchParams;
   const { supabase, profile, today } = await requireUser();
+  const ready = await isDisciplineReady(supabase);
 
-  const [activeRes, tasksRes, historyRes] = await Promise.all([
+  const [activeRes, tasksRes, historyRes, categories] = await Promise.all([
     supabase.from("focus_sessions").select("*").in("status", ["running", "paused"]).maybeSingle<FocusSession>(),
     supabase
       .from("tasks")
@@ -22,25 +25,35 @@ export default async function FocusPage({ searchParams }: { searchParams: Promis
       .limit(200),
     supabase
       .from("focus_sessions")
-      .select("id, kind, status, started_at, ended_at, focus_seconds, planned_seconds, note, task_id, tasks(title), session_interruptions(count)")
+      .select(
+        `id, kind, status, started_at, ended_at, focus_seconds, planned_seconds, note, task_id, ${ready ? "title, category_id, quality, outcome, " : ""}tasks(title, category_id), session_interruptions(count)`,
+      )
       .in("status", ["completed", "abandoned"])
       .gte("started_at", `${addDays(today, -7)}T00:00:00Z`)
       .order("started_at", { ascending: false })
       .limit(60),
+    getCategories(supabase, ready),
   ]);
 
   type Raw = Omit<HistoryItem, "task_title" | "interruptions"> & {
-    tasks: { title: string } | { title: string }[] | null;
+    tasks: { title: string; category_id: string | null } | { title: string; category_id: string | null }[] | null;
     session_interruptions: { count: number }[];
   };
-  const history: HistoryItem[] = ((historyRes.data ?? []) as unknown as Raw[]).map(({ tasks, session_interruptions, ...s }) => ({
-    ...s,
-    task_title: Array.isArray(tasks) ? (tasks[0]?.title ?? null) : (tasks?.title ?? null),
-    interruptions: session_interruptions?.[0]?.count ?? 0,
-  }));
+  const history: HistoryItem[] = ((historyRes.data ?? []) as unknown as Raw[]).map(({ tasks, session_interruptions, ...s }) => {
+    const task = Array.isArray(tasks) ? tasks[0] : tasks;
+    return {
+      ...s,
+      title: s.title ?? null,
+      category_id: s.category_id ?? task?.category_id ?? null,
+      quality: s.quality ?? null,
+      outcome: s.outcome ?? null,
+      task_title: task?.title ?? null,
+      interruptions: session_interruptions?.[0]?.count ?? 0,
+    };
+  });
 
   const just = sp.just === "2" || sp.just === "5" ? Number(sp.just) : null;
-  const tasks = (tasksRes.data ?? []) as Pick<Task, "id" | "title" | "parent_id" | "estimated_minutes" | "actual_seconds">[];
+  const tasks = (tasksRes.data ?? []) as Pick<Task, "id" | "title" | "parent_id" | "category_id" | "estimated_minutes" | "actual_seconds">[];
   const initialTask = sp.task && tasks.some((t) => t.id === sp.task) ? sp.task : null;
 
   return (
@@ -53,6 +66,9 @@ export default async function FocusPage({ searchParams }: { searchParams: Promis
       today={today}
       initialTaskId={initialTask}
       initialJust={just}
+      categories={categories}
+      ready={ready}
+      startQuote={quoteOfDay(today, "inicio")}
     />
   );
 }

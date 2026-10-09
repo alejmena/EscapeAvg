@@ -13,9 +13,19 @@ export type Profile = {
   weekly_focus_goal_minutes: number;
   streaks_enabled: boolean;
   share_stats: boolean;
+  /** Objetivo diario de horas productivas (minutos). Ausente hasta aplicar la migración de disciplina. */
+  daily_goal_minutes?: number | null;
 };
 
-export type Category = { id: string; name: string; color: string; icon: string | null; position: number };
+export type Category = {
+  id: string;
+  name: string;
+  color: string;
+  icon: string | null;
+  position: number;
+  /** Ausente hasta aplicar la migración de disciplina (equivale a true). */
+  counts_as_development?: boolean;
+};
 
 export type Project = {
   id: string;
@@ -63,6 +73,10 @@ export type FocusSession = {
   paused_seconds: number;
   focus_seconds: number | null;
   note: string | null;
+  title?: string | null;
+  category_id?: string | null;
+  quality?: number | null;
+  outcome?: string | null;
 };
 
 export type Habit = {

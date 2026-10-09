@@ -16,6 +16,8 @@ export function friendlyDbError(error: { code?: string; message?: string } | nul
       return error.message?.includes("focus_sessions_one_active")
         ? "Ya tienes una sesión activa. Termínala antes de empezar otra."
         : "Ya existe un elemento igual.";
+    case "23P01":
+      return "Ese horario se solapa con otra actividad registrada. Las horas no se pueden contar dos veces.";
     case "23503":
       return "El elemento relacionado no existe o no es tuyo.";
     case "23514":

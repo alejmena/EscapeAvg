@@ -341,3 +341,90 @@ dialog[open]::backdrop {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Sistema de disciplina: oro sobrio para metas cumplidas y celebraciones.
+--------------------------------------------------------------------------- */
+:root {
+  --gold: #b8860b;
+  --gold-2: #e6b54a;
+  --gold-soft: #fbf3df;
+}
+.dark {
+  --gold: #e9c46a;
+  --gold-2: #f6e3a8;
+  --gold-soft: #2a2312;
+}
+.text-gold {
+  background: linear-gradient(110deg, var(--gold) 0%, var(--gold-2) 45%, var(--gold) 90%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gold-sheen 5s linear infinite;
+}
+@keyframes gold-sheen {
+  to {
+    background-position: -200% 0;
+  }
+}
+.wordmark {
+  font-weight: 800;
+  letter-spacing: 0.32em;
+}
+
+@keyframes celebrate-backdrop {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes celebrate-card {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) translateY(12px);
+    filter: blur(8px);
+  }
+  60% {
+    opacity: 1;
+    filter: none;
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes celebrate-ring {
+  from {
+    opacity: 0.7;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 0;
+    transform: scale(2.4);
+  }
+}
+@keyframes celebrate-spark {
+  0% {
+    opacity: 0;
+    transform: rotate(var(--a)) translateY(0) scale(0.4);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(var(--a)) translateY(-150px) scale(1);
+  }
+}
+.celebrate-backdrop {
+  animation: celebrate-backdrop 400ms ease both;
+}
+.celebrate-card {
+  animation: celebrate-card 900ms var(--ease-out) both;
+}
+.celebrate-ring {
+  animation: celebrate-ring 1800ms var(--ease-out) both;
+}
+.celebrate-spark {
+  animation: celebrate-spark 1600ms var(--ease-out) both;
+}

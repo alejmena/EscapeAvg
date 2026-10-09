@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   BarChart3,
+  BookOpenText,
   CalendarClock,
   CheckSquare,
   Flame,
@@ -52,6 +53,7 @@ const NAV_GROUPS: { title: string; items: NavItem[] }[] = [
     items: [
       { href: "/stats", label: "Estadísticas", icon: BarChart3, hint: "Tus datos reales" },
       { href: "/progress", label: "Progreso", icon: Trophy, hint: "Nivel, XP y logros" },
+      { href: "/philosophy", label: "Filosofía", icon: BookOpenText, hint: "Rangos y frases" },
       { href: "/social", label: "Social", icon: Users, hint: "Amigos y grupos" },
     ],
   },

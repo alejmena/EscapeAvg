@@ -123,3 +123,14 @@ export function zonedDayStart(d: ISODate, tz: string): string {
   if (second !== first) t = guess - second * 60_000;
   return new Date(t).toISOString();
 }
+
+/** Instante (ISO UTC) de la hora local `hhmm` ("HH:MM") del día `d` en la zona `tz`. */
+export function zonedTimeToISO(d: ISODate, hhmm: string, tz: string): string {
+  const [h, m] = hhmm.split(":").map(Number);
+  const guess = toDate(d).getTime() + ((h || 0) * 60 + (m || 0)) * 60_000;
+  const first = offsetMinutes(new Date(guess), tz);
+  let t = guess - first * 60_000;
+  const second = offsetMinutes(new Date(t), tz);
+  if (second !== first) t = guess - second * 60_000;
+  return new Date(t).toISOString();
+}
