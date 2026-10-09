@@ -16,6 +16,15 @@ async function saved(page: Page, act: () => Promise<void>) {
   await done;
 }
 
+/**
+ * Recarga cuando la lista ya guardó todo. Next.js envía las Server Actions de una en una, así que
+ * recargar con cambios en cola los perdería; la tarjeta marca aria-busy mientras quedan por guardar.
+ */
+async function reloadWhenSaved(page: Page) {
+  await expect(page.getByTestId("quick-tasks")).toHaveAttribute("aria-busy", "false", { timeout: 15_000 });
+  await page.reload();
+}
+
 test.describe.configure({ mode: "serial" });
 
 let page: Page;
@@ -47,7 +56,7 @@ test("tareas rápidas: Enter crea, un clic completa, se edita, se reordena, se b
   await snap(page, "1-inicio-tareas-rapidas", false);
 
   // Se guardan en Supabase: siguen tras recargar y cuentan como tareas completadas.
-  await page.reload();
+  await reloadWhenSaved(page);
   await expect(card.getByTestId("quick-counter")).toHaveText("2 de 5 completadas");
   await expect(card.getByRole("checkbox", { name: 'Desmarcar "Tender la cama"' })).toBeVisible();
   // No aparecen duplicadas en "Para hoy".
@@ -76,7 +85,7 @@ test("tareas rápidas: Enter crea, un clic completa, se edita, se reordena, se b
   await page.mouse.move(hb.x + hb.width / 2, fb.y - 10, { steps: 12 });
   await saved(page, () => page.mouse.up());
   await expect(card.locator("[data-qt-row]").first()).toContainText("Repasar vocabulario chino");
-  await page.reload();
+  await reloadWhenSaved(page);
   await expect(card.locator("[data-qt-row]").first()).toContainText("Repasar vocabulario chino");
 
   // Eliminar y deshacer
@@ -86,7 +95,7 @@ test("tareas rápidas: Enter crea, un clic completa, se edita, se reordena, se b
   await expect(page.getByRole("status").filter({ hasText: "Eliminada: Limpiar habitación" })).toBeVisible();
   await saved(page, () => page.getByRole("button", { name: "Deshacer" }).click());
   await expect(row).toHaveCount(1);
-  await page.reload();
+  await reloadWhenSaved(page);
   await expect(row).toHaveCount(1);
 });
 
@@ -101,13 +110,13 @@ test("tareas rápidas: repetir, plantillas de un clic e historial sin sumar tiem
   await card.getByRole("button", { name: 'Más opciones de "Ordenar escritorio"' }).click();
   await saved(page, () => page.getByRole("dialog").getByRole("button", { name: "Guardar como plantilla de un clic" }).click());
   await expect(page.getByRole("dialog")).toBeHidden();
-  await page.reload();
+  await reloadWhenSaved(page);
   await expect(card.getByRole("button", { name: "+ Ordenar escritorio" })).toBeVisible();
   await card.getByRole("button", { name: "+ Ordenar escritorio" }).click();
   await expect(card.locator("[data-qt-row]", { hasText: "Ordenar escritorio" })).toHaveCount(2);
 
   // La recurrente de hoy no se duplica al recargar.
-  await page.reload();
+  await reloadWhenSaved(page);
   await expect(card.locator("[data-qt-row]", { hasText: "Tender la cama" })).toHaveCount(1);
 
   // Las completadas cuentan como tareas, pero no suman tiempo de concentración.

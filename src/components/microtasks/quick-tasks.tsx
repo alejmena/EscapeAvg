@@ -210,7 +210,7 @@ export function QuickTasks({ tasks, templates, today }: { tasks: QuickTask[]; te
   const chips = templates.filter((t) => t.repeat_days.length === 0);
 
   return (
-    <section className="card-glass relative min-w-0 overflow-hidden rounded-[24px] p-5" aria-labelledby="qt-title" data-testid="quick-tasks">
+    <section className="card-glass relative min-w-0 overflow-hidden rounded-[24px] p-5" aria-labelledby="qt-title" aria-busy={busy > 0} data-testid="quick-tasks">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-warning via-ring-focus to-accent" aria-hidden />
       <div className="mb-1 flex items-center justify-between gap-2">
         <h2 id="qt-title" className="min-w-0 text-[13px] font-bold uppercase tracking-wider">
