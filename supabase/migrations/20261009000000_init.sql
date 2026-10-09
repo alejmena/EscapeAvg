@@ -291,7 +291,8 @@ returns void language sql security definer set search_path = '' as $$
         where s.task_id = p_task_id and s.status = 'completed' and s.kind <> 'break'), 0)
    where t.id = p_task_id;
 $$;
-revoke execute on function public.refresh_task_actual_seconds(uuid) from public;
+-- Supabase concede EXECUTE por defecto a anon/authenticated: se revoca explícitamente (uso interno de triggers).
+revoke execute on function public.refresh_task_actual_seconds(uuid) from public, anon, authenticated;
 
 -- ---------------------------------------------------------------------------
 -- Hábitos

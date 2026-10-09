@@ -84,7 +84,7 @@ export function formatDuration(seconds: number): string {
   const s = Math.max(0, Math.round(seconds));
   const h = Math.floor(s / 3600);
   const m = Math.floor((s % 3600) / 60);
-  if (h === 0) return `${m} min`;
+  if (h === 0) return s > 0 && m === 0 ? "<1 min" : `${m} min`;
   return m === 0 ? `${h} h` : `${h} h ${m} min`;
 }
 

@@ -10,7 +10,7 @@ cualquier cambio estructural: si una fase futura necesita algo que no encaja aqu
 
 | Pieza | Elección | Por qué |
 |---|---|---|
-| Framework | **Next.js 15 (App Router) + React 19** | Server Components para leer datos sin exponer lógica, Server Actions para mutaciones validadas en servidor, rutas por carpeta, despliegue trivial en Vercel. Base sólida para PWA. |
+| Framework | **Next.js 16 (App Router) + React 19** | Server Components para leer datos sin exponer lógica, Server Actions para mutaciones validadas en servidor, rutas por carpeta, despliegue trivial en Vercel. Base sólida para PWA. |
 | Lenguaje | **TypeScript estricto** | Tipos compartidos entre UI, acciones y lógica de dominio. |
 | Estilos | **Tailwind CSS v4** con tokens CSS | Diseño consistente, modo claro/oscuro con variables, sin hojas de estilo dispersas. |
 | Base de datos | **PostgreSQL (Supabase)** | Relacional (tareas ↔ sesiones ↔ categorías ↔ hábitos), agregaciones SQL para estadísticas, RLS para privacidad por usuario. |
@@ -93,7 +93,7 @@ Las comparaciones (semana vs. semana anterior, etc.) y la racha de constancia se
 ## 3. Seguridad
 
 - Contraseñas: solo Supabase Auth (bcrypt). La app nunca las ve tras el envío del formulario.
-- Sesión: cookies httpOnly gestionadas por `@supabase/ssr`; `middleware.ts` refresca y protege `/app/*`.
+- Sesión: cookies httpOnly gestionadas por `@supabase/ssr`; `src/proxy.ts` (middleware de Next) refresca la sesión y protege las rutas privadas.
 - Autorización: RLS en **todas** las tablas. Aunque una Server Action tuviera un bug, Postgres no devuelve ni
   modifica filas de otro usuario. Probado en `tests/db`.
 - Integridad: claves foráneas compuestas impiden enlazar una tarea a la categoría o proyecto de otro usuario.
