@@ -28,15 +28,15 @@ export function Modal({ open, onClose, title, children, className, sheet = false
         if (e.target === ref.current) onClose();
       }}
       className={cn(
-        "border border-border bg-surface p-0 text-text shadow-2xl backdrop:bg-black/50 backdrop:backdrop-blur-sm",
+        "border border-border bg-surface p-0 text-text shadow-pop backdrop:bg-black/40 backdrop:backdrop-blur-md",
         sheet
-          ? "mx-auto mb-0 mt-auto max-h-[85dvh] w-full max-w-none rounded-t-2xl sm:m-auto sm:w-[calc(100%-2rem)] sm:max-w-lg sm:rounded-2xl"
-          : "m-auto w-[calc(100%-2rem)] max-w-lg rounded-2xl",
+          ? "sheet-in mx-auto mb-0 mt-auto max-h-[85dvh] w-full max-w-none rounded-t-[28px] sm:m-auto sm:w-[calc(100%-2rem)] sm:max-w-lg sm:rounded-[24px]"
+          : "m-auto w-[calc(100%-2rem)] max-w-lg rounded-[24px]",
         className,
       )}
     >
       {open && (
-        <div className="animate-in p-5">
+        <div className="pop-in p-5">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold">{title}</h2>
             <button type="button" onClick={onClose} className="rounded-lg p-1 text-muted hover:bg-surface-2" aria-label="Cerrar">
