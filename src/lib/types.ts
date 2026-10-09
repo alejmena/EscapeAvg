@@ -13,8 +13,13 @@ export type Profile = {
   weekly_focus_goal_minutes: number;
   streaks_enabled: boolean;
   share_stats: boolean;
+<<<<<<< HEAD
   /** Objetivo diario de horas productivas (minutos). Ausente hasta aplicar la migración de disciplina. */
   daily_goal_minutes?: number | null;
+=======
+  /** Solo existe tras la migración de microtareas. */
+  quick_tasks_carry_over?: boolean;
+>>>>>>> 20c3163 (Microtareas en el inicio, horario semanal e ideas para crecer)
 };
 
 export type Category = {
@@ -137,3 +142,30 @@ export type Note = {
 };
 
 export type ActionResult<T = undefined> = { ok: true; data?: T } | { ok: false; error: string };
+
+/** Microtarea: una fila de `tasks` con quick = true (cuenta como tarea, nunca suma tiempo por sí sola). */
+export type QuickTask = {
+  id: string;
+  title: string;
+  status: TaskStatus;
+  due_date: string | null;
+  position: number;
+  completed_at: string | null;
+  quick_template_id: string | null;
+  actual_seconds: number;
+};
+
+/** Plantilla de microtarea. Con días de repetición se crea sola esos días (0 = domingo … 6 = sábado). */
+export type QuickTemplate = { id: string; title: string; repeat_days: number[]; position: number };
+
+/** Bloque del horario semanal (minutos desde las 00:00). */
+export type ScheduleBlock = {
+  id: string;
+  day_of_week: number;
+  start_minute: number;
+  end_minute: number;
+  title: string;
+  color: string;
+  idea_key: string | null;
+  note: string | null;
+};

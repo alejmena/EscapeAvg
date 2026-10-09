@@ -1,0 +1,64 @@
+/* Nube de ideas flotantes. */
+@keyframes idea-float {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(var(--dx, 4px), var(--dy, -10px));
+  }
+}
+.idea-bubble {
+  animation: idea-float var(--t, 6s) ease-in-out infinite;
+  animation-delay: var(--d, 0s);
+  transition:
+    scale 220ms var(--ease-spring),
+    box-shadow 220ms ease;
+}
+.idea-bubble:hover {
+  scale: 1.07;
+}
+
+.idea-gold {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #fff3c4 0%, #fbbf24 45%, #d97706 100%);
+  color: #3a2200;
+  border-color: rgb(251 191 36 / 0.9);
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.4) inset,
+    0 8px 28px -6px rgb(245 158 11 / 0.75);
+}
+.idea-gold::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.4) 50%, transparent 70%);
+  transform: translateX(-120%);
+  animation: idea-shine 3.6s ease-in-out infinite;
+  animation-delay: var(--d, 0s);
+  pointer-events: none;
+}
+@keyframes idea-shine {
+  0%,
+  55% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+.idea-key {
+  background: linear-gradient(135deg, #a7f3d0 0%, #14b8a6 60%, #0f766e 100%);
+  color: #032b26;
+  border-color: rgb(20 184 166 / 0.8);
+  box-shadow: 0 8px 24px -8px rgb(20 184 166 / 0.7);
+}
+
+.gold-text {
+  background: linear-gradient(135deg, #f59e0b, #fbbf24 40%, #b45309);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}

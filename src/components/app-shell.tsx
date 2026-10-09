@@ -7,9 +7,11 @@ import {
   BarChart3,
   BookOpenText,
   CalendarClock,
+  CalendarDays,
   CheckSquare,
   Flame,
   LayoutDashboard,
+  Lightbulb,
   LogOut,
   Menu,
   Settings,
@@ -44,6 +46,8 @@ const NAV_GROUPS: { title: string; items: NavItem[] }[] = [
   {
     title: "Organiza",
     items: [
+      { href: "/schedule", label: "Horario", icon: CalendarDays, hint: "Tu semana tipo" },
+      { href: "/ideas", label: "Ideas", icon: Lightbulb, hint: "Habilidades para crecer" },
       { href: "/notes", label: "Notas", icon: StickyNote, hint: "Tablero de ideas" },
       { href: "/goals", label: "Objetivos", icon: Target, hint: "Metas medibles" },
     ],
