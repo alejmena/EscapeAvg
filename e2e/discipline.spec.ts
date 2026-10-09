@@ -92,7 +92,8 @@ test("frases: favoritas guardadas en tu cuenta", async () => {
   await page.goto("/philosophy?f=rusia#frases");
   const first = page.getByTestId("quote-card").nth(1);
   await first.getByRole("button", { name: "Guardar como favorita" }).click();
-  await expect(first.getByRole("button", { name: "Quitar de favoritas" })).toBeVisible();
+  // El cambio es optimista: espera a que el servidor confirme antes de navegar.
+  await expect(first.getByRole("button", { name: "Quitar de favoritas" })).toBeEnabled();
   await page.goto("/philosophy?f=fav#frases");
   await expect(page.getByRole("link", { name: "Favoritas (1)" })).toBeVisible();
   await snap(page, "d-03-philosophy");
