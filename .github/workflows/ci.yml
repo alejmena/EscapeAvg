@@ -11,7 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:16
+        # Réplica pública de la imagen oficial: evita el límite de descargas anónimas de Docker Hub.
+        image: public.ecr.aws/docker/library/postgres:16
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: escapeavg_test

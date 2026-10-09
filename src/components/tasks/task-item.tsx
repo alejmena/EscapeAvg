@@ -178,7 +178,7 @@ export function TaskItem({
           {error && <p className="mt-1 text-xs text-danger">{error}</p>}
         </div>
 
-        <div className="flex items-center gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100">
+        <div className="flex items-center gap-0.5 opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:focus-within:opacity-100">
           {!done && (
             <Link
               href={`/focus?task=${task.id}`}
