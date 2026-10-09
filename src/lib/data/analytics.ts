@@ -7,7 +7,7 @@ import type { ProjectRow, ProjectTaskRow, SessionPoint } from "@/lib/domain/anal
 const PAGE = 1000;
 const MAX_ROWS = 20_000;
 
-async function paginate<T>(fetchPage: (from: number, to: number) => PromiseLike<{ data: unknown; error: unknown }>): Promise<T[]> {
+export async function paginate<T>(fetchPage: (from: number, to: number) => PromiseLike<{ data: unknown; error: unknown }>): Promise<T[]> {
   const out: T[] = [];
   for (let from = 0; from < MAX_ROWS; from += PAGE) {
     const { data, error } = await fetchPage(from, from + PAGE - 1);

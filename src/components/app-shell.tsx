@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, CheckSquare, Flame, LayoutDashboard, LogOut, Settings, StickyNote, Target, Timer } from "lucide-react";
+import { BarChart3, CheckSquare, Flame, LayoutDashboard, LogOut, Settings, StickyNote, Target, Timer, Trophy } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ActiveSessionPill } from "@/components/focus/active-session-pill";
@@ -18,6 +18,7 @@ const NAV = [
   { href: "/notes", label: "Notas", icon: StickyNote },
   { href: "/goals", label: "Objetivos", icon: Target },
   { href: "/stats", label: "Estadísticas", icon: BarChart3 },
+  { href: "/progress", label: "Progreso", icon: Trophy },
 ];
 
 const MOBILE_NAV = ["/dashboard", "/tasks", "/focus", "/habits", "/stats"];
@@ -73,6 +74,9 @@ export function AppShell({ children, name, activeSession }: { children: React.Re
           <div className="flex items-center gap-1">
             <Link href="/notes" className="rounded-lg p-2 text-muted" aria-label="Notas">
               <StickyNote size={18} />
+            </Link>
+            <Link href="/progress" className="rounded-lg p-2 text-muted" aria-label="Progreso">
+              <Trophy size={18} />
             </Link>
             <Link href="/goals" className="rounded-lg p-2 text-muted" aria-label="Objetivos">
               <Target size={18} />

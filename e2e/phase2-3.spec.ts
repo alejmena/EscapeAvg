@@ -108,3 +108,19 @@ test("exportar CSV y calendario en el inicio", async () => {
   expect(overflow).toBeLessThanOrEqual(1);
   await snap(page, "p2-05-mobile-dark-trends");
 });
+
+test("progreso: nivel, XP, logros y desafío aceptado", async () => {
+  await page.setViewportSize({ width: 1360, height: 900 });
+  await page.emulateMedia({ colorScheme: "light" });
+  await page.goto("/progress");
+  await expect(page.getByRole("heading", { name: "Progreso" })).toBeVisible();
+  // 50 min manuales = 25 XP + 20 por día activo.
+  await expect(page.getByText("45 XP en total")).toBeVisible();
+  await expect(page.getByText("Primer paso").first()).toBeVisible();
+  await expect(page.getByText(/Desbloqueado el/).first()).toBeVisible();
+  await page.getByRole("button", { name: "Aceptar desafío" }).first().click();
+  await expect(page.getByText(/quedan 7 días/)).toBeVisible();
+  await snap(page, "p3-01-progress");
+  await page.goto("/dashboard");
+  await expect(page.getByRole("link", { name: /Nivel 1, Primer paso/ })).toBeVisible();
+});

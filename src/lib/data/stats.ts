@@ -68,7 +68,8 @@ export type GoalWithProgress = Goal & { progress: GoalProgress; range: { from: I
 
 export async function getGoalsWithProgress(supabase: ServerSupabase, today: ISODate, weekStartsOn: number): Promise<GoalWithProgress[]> {
   const { data } = await supabase.from("goals").select("*").eq("status", "active").order("created_at");
-  const goals = (data ?? []) as Goal[];
+  // Los desafíos y objetivos con fechas ya terminados pasan a "Anteriores".
+  const goals = ((data ?? []) as Goal[]).filter((g) => !(g.period === "custom" && g.end_date && g.end_date < today));
   return Promise.all(
     goals.map(async (g) => {
       const range = goalRange(g, today, weekStartsOn);

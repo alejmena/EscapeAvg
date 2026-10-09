@@ -76,9 +76,13 @@ export function GoalsView({ goals, categories, past, today }: { goals: GoalWithP
                   {p.status === "achieved" ? "✓ " : ""}
                   {p.title}
                 </span>
-                <button type="button" className="text-xs text-muted hover:text-text" onClick={() => run(() => setGoalStatus(p.id, "active"))}>
-                  Reactivar
-                </button>
+                {p.status === "active" ? (
+                  <span className="text-xs text-muted">Terminado</span>
+                ) : (
+                  <button type="button" className="text-xs text-muted hover:text-text" onClick={() => run(() => setGoalStatus(p.id, "active"))}>
+                    Reactivar
+                  </button>
+                )}
               </li>
             ))}
           </ul>

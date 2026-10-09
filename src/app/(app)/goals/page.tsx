@@ -11,7 +11,12 @@ export default async function GoalsPage() {
   const [goals, cats, done] = await Promise.all([
     getGoalsWithProgress(supabase, today, profile.week_starts_on),
     supabase.from("categories").select("*").is("archived_at", null).order("position"),
-    supabase.from("goals").select("id, title, status, updated_at").neq("status", "active").order("updated_at", { ascending: false }).limit(20),
+    supabase
+      .from("goals")
+      .select("id, title, status, updated_at")
+      .or(`status.neq.active,and(period.eq.custom,end_date.lt.${today})`)
+      .order("updated_at", { ascending: false })
+      .limit(20),
   ]);
   return (
     <GoalsView

@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowDownRight, ArrowRight, ArrowUpRight, CheckCircle2, Flame, Play, Target, Timer, Zap } from "lucide-react";
+import { ArrowDownRight, ArrowRight, ArrowUpRight, CheckCircle2, Flame, Play, Target, Timer, Trophy, Zap } from "lucide-react";
 import { requireUser } from "@/lib/auth";
-import { addDays, eachDay, localHour, startOfWeek, weekday } from "@/lib/domain/dates";
+import { addDays, diffDays, eachDay, localHour, startOfWeek, weekday } from "@/lib/domain/dates";
 import { isScheduled } from "@/lib/domain/habits";
 import { compare, describeChange, formatDuration, totals, type Comparison } from "@/lib/domain/stats";
 import { GOAL_METRIC_LABEL } from "@/lib/domain/goals";
 import { formatLongDate, greeting, WEEKDAY_SHORT } from "@/lib/format";
 import { getDaily, getGoalsWithProgress, getRecommendations, getStreak } from "@/lib/data/stats";
 import { getAccountStart } from "@/lib/data/analytics";
+import { getProgress } from "@/lib/data/gamification";
 import { CalendarHeatmap } from "@/components/charts/calendar-heatmap";
 import type { Habit, HabitLog, Task } from "@/lib/types";
 import { buttonClass } from "@/components/ui/button";
@@ -38,7 +39,7 @@ export default async function DashboardPage() {
   const prevWeekStart = addDays(weekStart, -7);
   const heatStart = addDays(weekStart, -7 * 15);
 
-  const [daily, streak, goals, recs, tasksRes, habitsRes, logsRes, accountStart] = await Promise.all([
+  const [daily, streak, goals, recs, tasksRes, habitsRes, logsRes, accountStart, progress] = await Promise.all([
     getDaily(supabase, heatStart, today),
     getStreak(supabase, today),
     getGoalsWithProgress(supabase, today, profile.week_starts_on),
@@ -55,7 +56,11 @@ export default async function DashboardPage() {
     supabase.from("habits").select("*").is("archived_at", null).order("position"),
     supabase.from("habit_logs").select("habit_id, log_date, status").eq("log_date", today),
     getAccountStart(supabase, profile.timezone),
+    getProgress(supabase, profile.timezone, today, profile.week_starts_on),
   ]);
+  const { level } = progress;
+  const todayXp = progress.xp.byDay.get(today) ?? 0;
+  const newAchievements = progress.achievements.filter((a) => a.unlockedAt && diffDays(today, a.unlockedAt) <= 2);
   // Calendario de las últimas 16 semanas, sin mostrar semanas anteriores a la cuenta.
   const heatFrom = accountStart && accountStart > heatStart ? accountStart : heatStart;
 
@@ -102,6 +107,28 @@ export default async function DashboardPage() {
           </Link>
         </div>
       </section>
+
+      <Link
+        href="/progress"
+        className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-border bg-surface px-4 py-3 transition-colors hover:bg-surface-2"
+        aria-label={`Nivel ${level.level}, ${level.title}. Ver progreso`}
+      >
+        <span className="flex items-center gap-2 text-sm font-semibold">
+          <span className="grid h-8 w-8 place-items-center rounded-lg bg-accent-soft text-accent tabular">{level.level}</span>
+          {level.title}
+        </span>
+        <span className="min-w-[140px] flex-1">
+          <ProgressBar value={level.ratio} label={`Progreso hacia el nivel ${level.level + 1}`} />
+        </span>
+        <span className="text-xs text-muted tabular">
+          {level.into}/{level.needed} XP{todayXp > 0 ? ` · +${todayXp} hoy` : ""}
+        </span>
+        {newAchievements.length > 0 && (
+          <span className="flex items-center gap-1 rounded-lg bg-warning-soft px-2 py-1 text-xs font-medium text-warning">
+            <Trophy size={13} /> {newAchievements.length === 1 ? `Logro nuevo: ${newAchievements[0].title}` : `${newAchievements.length} logros nuevos`}
+          </span>
+        )}
+      </Link>
 
       <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Card className="p-4">
