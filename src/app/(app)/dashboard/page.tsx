@@ -20,6 +20,8 @@ import { TaskCheckbox } from "@/components/tasks/task-item";
 import { HabitToggle, RestDayButton } from "@/components/dashboard/widgets";
 import { RecommendationList } from "@/components/dashboard/recommendations";
 import { StandingCard } from "@/components/dashboard/standing-card";
+import { ActivityRings } from "@/components/fx/activity-rings";
+import { CountUp } from "@/components/fx/count-up";
 import { describeYesterday, standing, type Yesterday } from "@/lib/domain/standing";
 import { cn } from "@/lib/cn";
 
@@ -35,12 +37,40 @@ function Delta({ c, label }: { c: Comparison; label: string }) {
   );
 }
 
+function RingLegend({ color, label, children }: { color: string; label: string; children: React.ReactNode }) {
+  return (
+    <li className="flex items-center gap-3">
+      <span className="h-3 w-3 shrink-0 rounded-full" style={{ background: color, boxShadow: `0 0 10px ${color}` }} aria-hidden />
+      <span className="min-w-0">
+        <span className="block text-xs font-semibold uppercase tracking-wider" style={{ color }}>
+          {label}
+        </span>
+        <span className="block text-lg font-semibold tabular">{children}</span>
+      </span>
+    </li>
+  );
+}
+
+function StatTile({ icon, tone, label, children }: { icon: React.ReactNode; tone: string; label: string; children: React.ReactNode }) {
+  return (
+    <Card className="p-4 sm:p-5">
+      <div className="flex items-center gap-2.5">
+        <span className={cn("grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br text-white shadow-float", tone)}>{icon}</span>
+        <p className="text-xs font-medium leading-tight text-muted">{label}</p>
+      </div>
+      {children}
+    </Card>
+  );
+}
+
 /** Frase de impacto sobre ayer, con la cifra destacada; nunca castiga el descanso. */
 function YesterdayLine({ y, fallback }: { y: Yesterday | null; fallback: string }) {
   if (y?.kind === "ratio") {
     return (
-      <p className="mt-4 text-lg leading-snug sm:text-xl" data-testid="yesterday">
-        Ayer rendiste al <span className="text-gradient text-3xl font-bold tabular sm:text-4xl">{y.pct} %</span> de tu media
+      <p className="mt-5 text-lg font-medium leading-snug sm:text-2xl" data-testid="yesterday">
+        Ayer rendiste al{" "}
+        <CountUp value={y.pct} suffix=" %" duration={1400} className="text-gradient num-xl align-[-0.08em] text-5xl sm:text-6xl" />{" "}
+        de tu media
         {y.pct < 100 ? <span className="text-muted">: un día más tranquilo.</span> : "."}
         <span className="mt-1 block text-sm text-muted">
           {formatDuration(y.seconds)} de concentración frente a tu media de {formatDuration(y.baselineSeconds)} en días activos.
@@ -109,24 +139,28 @@ export default async function DashboardPage() {
 
   const weekDays = eachDay(weekStart, addDays(weekStart, 6));
   const standingNow = standing(daily, today, accountStart ?? null);
+  const habitsDone = habits.filter((h) => doneHabitIds.has(h.id)).length;
+  // Metas de los anillos: tu objetivo semanal repartido en 7 días (1 h si no tienes) y las tareas de hoy.
+  const focusTarget = goalSeconds > 0 ? Math.round(goalSeconds / 7 / 60) * 60 : 3600;
+  const tasksTarget = todayStat.tasks_completed + tasks.length;
   const nothingYet = todayStat.focus_seconds === 0 && todayStat.tasks_completed === 0 && todayStat.habits_done === 0;
 
   return (
     <div className="stagger space-y-6">
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.35fr_1fr]">
-        <section className="relative overflow-hidden rounded-[28px] border border-border/70 bg-surface p-6 shadow-soft sm:p-8">
-          <div
-            className="animate-glow pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-gradient-to-br from-accent/30 to-accent-2/20 blur-3xl"
-            aria-hidden
-          />
-          <div className="relative">
-            <p className="text-sm font-medium text-muted">{formatLongDate(today)}</p>
-            <h1 className="mt-1 text-[32px] font-bold leading-[1.1] tracking-tight sm:text-[40px]">
+      <section className="card-glass relative overflow-hidden rounded-[32px] p-6 sm:p-8">
+        <div
+          className="animate-glow pointer-events-none absolute -right-20 -top-28 h-80 w-80 rounded-full bg-gradient-to-br from-accent/40 via-accent-2/25 to-ring-focus/20 blur-3xl"
+          aria-hidden
+        />
+        <div className="relative grid items-center gap-8 lg:grid-cols-[1fr_auto]">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold uppercase tracking-wider text-muted">{formatLongDate(today)}</p>
+            <h1 className="mt-2 text-[40px] font-bold leading-[1.02] tracking-tight sm:text-[56px]">
               Hola{name ? `, ${name}` : ""}.
-              <span className="block text-muted">{greeting(hour)}.</span>
+              <span className="text-gradient block">{greeting(hour)}.</span>
             </h1>
             <YesterdayLine y={standingNow.yesterday} fallback={nothingYet ? "Un paso pequeño es suficiente para empezar el día." : "Vas sumando. Sigue a tu ritmo."} />
-            <div className="mt-6 flex flex-wrap gap-2">
+            <div className="mt-7 flex flex-wrap gap-2">
               <Link href="/focus" className={buttonClass("primary", "lg")}>
                 <Play size={18} /> Empezar a concentrarme
               </Link>
@@ -135,85 +169,101 @@ export default async function DashboardPage() {
               </Link>
             </div>
           </div>
-        </section>
+          <div className="flex flex-col items-center gap-5 sm:flex-row lg:flex-col xl:flex-row">
+            <ActivityRings
+              size={216}
+              rings={[
+                { label: "Concentración", value: focusTarget ? todayStat.focus_seconds / focusTarget : 0, color: "var(--ring-focus)", color2: "var(--ring-focus-2)" },
+                { label: "Tareas", value: tasksTarget ? todayStat.tasks_completed / tasksTarget : 0, color: "var(--ring-tasks)", color2: "var(--ring-tasks-2)" },
+                { label: "Hábitos", value: habits.length ? habitsDone / habits.length : 0, color: "var(--ring-habits)", color2: "var(--ring-habits-2)" },
+              ]}
+            />
+            <ul className="space-y-3 text-sm" aria-label="Anillos de hoy">
+              <RingLegend color="var(--ring-focus)" label="Concentración">
+                <CountUp value={todayStat.focus_seconds} kind="duration" />
+                <span className="text-muted"> / {formatDuration(focusTarget)}</span>
+              </RingLegend>
+              <RingLegend color="var(--ring-tasks)" label="Tareas">
+                <CountUp value={todayStat.tasks_completed} />
+                <span className="text-muted"> / {tasksTarget}</span>
+              </RingLegend>
+              <RingLegend color="var(--ring-habits)" label="Hábitos">
+                <CountUp value={habitsDone} />
+                <span className="text-muted"> / {habits.length}</span>
+              </RingLegend>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <StandingCard s={standingNow} />
-      </div>
-
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-        <Link
-          href="/progress"
-          className="lift flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2 rounded-[22px] border border-border/70 bg-surface px-4 py-3 shadow-soft hover:border-accent/40"
-          aria-label={`Nivel ${level.level}, ${level.title}. Ver progreso`}
-        >
-          <span className="flex items-center gap-2 text-sm font-semibold">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-accent-soft text-accent tabular">{level.level}</span>
-            {level.title}
-          </span>
-          <span className="min-w-[140px] flex-1">
-            <ProgressBar value={level.ratio} label={`Progreso hacia el nivel ${level.level + 1}`} />
-          </span>
-          <span className="text-xs text-muted tabular">
-            {level.into}/{level.needed} XP{todayXp > 0 ? ` · +${todayXp} hoy` : ""}
-          </span>
-          {newAchievements.length > 0 && (
-            <span className="flex items-center gap-1 rounded-lg bg-warning-soft px-2 py-1 text-xs font-medium text-warning">
-              <Trophy size={13} /> {newAchievements.length === 1 ? `Logro nuevo: ${newAchievements[0].title}` : `${newAchievements.length} logros nuevos`}
+        <div className="grid content-start gap-4">
+          <Link href="/plan" className="lift card-glass group flex min-w-0 items-center gap-4 rounded-[24px] p-5">
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-accent to-accent-2 text-accent-fg shadow-float">
+              <CalendarClock size={22} />
             </span>
-          )}
-        </Link>
-
-        <Link
-          href="/plan"
-          className="lift group order-first flex min-w-0 items-center gap-3 rounded-[22px] border border-accent/30 bg-accent-soft/60 px-4 py-3 text-sm hover:border-accent/60"
-        >
-          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-accent text-accent-fg">
-            <CalendarClock size={16} />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block font-medium">Tu plan de hoy</span>
-            <span className="block truncate text-xs text-muted">
-              {nextUp
-                ? `Empieza por "${nextUp.task.title}" · ${plan.items.length} ${plan.items.length === 1 ? "tarea" : "tareas"}, ≈ ${formatDuration(plan.plannedMinutes * 60)}`
-                : plan.headline}
+            <span className="min-w-0 flex-1">
+              <span className="block text-[15px] font-semibold">Tu plan de hoy</span>
+              <span className="block truncate text-sm text-muted">
+                {nextUp
+                  ? `Empieza por "${nextUp.task.title}" · ${plan.items.length} ${plan.items.length === 1 ? "tarea" : "tareas"}, ≈ ${formatDuration(plan.plannedMinutes * 60)}`
+                  : plan.headline}
+              </span>
             </span>
-          </span>
-          <ArrowRight size={16} className="shrink-0 text-accent transition-transform group-hover:translate-x-0.5" />
-        </Link>
+            <ArrowRight size={18} className="shrink-0 text-accent transition-transform group-hover:translate-x-1" />
+          </Link>
+          <Link
+            href="/progress"
+            className="lift card-glass flex min-w-0 flex-wrap items-center gap-x-4 gap-y-3 rounded-[24px] p-5"
+            aria-label={`Nivel ${level.level}, ${level.title}. Ver progreso`}
+          >
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-warning to-ring-focus text-lg font-bold text-white shadow-float tabular">
+              {level.level}
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="flex flex-wrap items-baseline justify-between gap-x-2">
+                <span className="text-[15px] font-semibold">{level.title}</span>
+                <span className="text-xs text-muted tabular">
+                  {level.into}/{level.needed} XP{todayXp > 0 ? ` · +${todayXp} hoy` : ""}
+                </span>
+              </span>
+              <ProgressBar value={level.ratio} className="mt-2" label={`Progreso hacia el nivel ${level.level + 1}`} />
+            </span>
+            {newAchievements.length > 0 && (
+              <span className="flex items-center gap-1 rounded-full bg-warning-soft px-2.5 py-1 text-xs font-medium text-warning">
+                <Trophy size={13} /> {newAchievements.length === 1 ? `Logro nuevo: ${newAchievements[0].title}` : `${newAchievements.length} logros nuevos`}
+              </span>
+            )}
+          </Link>
+        </div>
       </div>
 
       <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Card className="p-4">
-          <p className="flex items-center gap-1.5 text-xs text-muted">
-            <Timer size={14} /> Concentración hoy
+        <StatTile icon={<Timer size={18} />} tone="from-ring-focus to-[var(--ring-focus-2)]" label="Concentración hoy">
+          <p className="num-xl mt-3 text-[22px] sm:text-[28px]">
+            <CountUp value={todayStat.focus_seconds} kind="duration" />
           </p>
-          <p className="mt-2 text-2xl font-semibold tabular">{formatDuration(todayStat.focus_seconds)}</p>
           <Delta c={focusVsYesterday} label="ayer" />
-        </Card>
-        <Card className="p-4">
-          <p className="flex items-center gap-1.5 text-xs text-muted">
-            <CheckCircle2 size={14} /> Tareas completadas
+        </StatTile>
+        <StatTile icon={<CheckCircle2 size={18} />} tone="from-ring-tasks to-[var(--ring-tasks-2)]" label="Tareas completadas">
+          <p className="num-xl mt-3 text-[22px] sm:text-[28px]">
+            <CountUp value={todayStat.tasks_completed} />
           </p>
-          <p className="mt-2 text-2xl font-semibold tabular">{todayStat.tasks_completed}</p>
           <Delta c={tasksVsYesterday} label="ayer" />
-        </Card>
-        <Card className="p-4">
-          <p className="flex items-center gap-1.5 text-xs text-muted">
-            <Flame size={14} /> Hábitos hoy
-          </p>
-          <p className="mt-2 text-2xl font-semibold tabular">
-            {habits.filter((h) => doneHabitIds.has(h.id)).length}
-            <span className="text-base font-normal text-muted">/{habits.length}</span>
+        </StatTile>
+        <StatTile icon={<Flame size={18} />} tone="from-ring-habits to-[var(--ring-habits-2)]" label="Hábitos hoy">
+          <p className="num-xl mt-3 text-[22px] sm:text-[28px]">
+            <CountUp value={habitsDone} />
+            <span className="text-lg font-medium text-muted">/{habits.length}</span>
           </p>
           <p className="mt-1 text-xs text-muted">{habits.length ? "programados para hoy" : "ninguno programado"}</p>
-        </Card>
-        <Card className="p-4">
-          <p className="flex items-center gap-1.5 text-xs text-muted">
-            <Flame size={14} className="text-warning" /> Racha de constancia
-          </p>
+        </StatTile>
+        <StatTile icon={<Flame size={18} />} tone="from-warning to-ring-focus" label="Racha de constancia">
           {profile.streaks_enabled ? (
             <>
-              <p className="mt-2 text-2xl font-semibold tabular">
-                {streak.current} <span className="text-base font-normal text-muted">{streak.current === 1 ? "día" : "días"}</span>
+              <p className="num-xl mt-3 text-[22px] sm:text-[28px]">
+                <CountUp value={streak.current} /> <span className="text-lg font-medium text-muted">{streak.current === 1 ? "día" : "días"}</span>
               </p>
               <div className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-muted">
                 {streak.pendingToday && !streak.restToday && <span>Haz algo hoy para mantenerla.</span>}
@@ -222,9 +272,9 @@ export default async function DashboardPage() {
               </div>
             </>
           ) : (
-            <p className="mt-2 text-sm text-muted">Rachas desactivadas en ajustes.</p>
+            <p className="mt-3 text-sm text-muted">Rachas desactivadas en ajustes.</p>
           )}
-        </Card>
+        </StatTile>
       </section>
 
       <div className="grid gap-6 lg:grid-cols-3">

@@ -13,7 +13,7 @@ export function ActiveSessionPill({ session }: { session: FocusSession }) {
   return (
     <Link
       href="/focus"
-      className="fixed bottom-20 right-4 z-40 flex items-center gap-2 rounded-full bg-text px-4 py-2.5 text-sm font-medium text-bg shadow-lg lg:bottom-6"
+      className="fixed bottom-28 right-4 z-40 flex items-center gap-2 rounded-full bg-text px-4 py-2.5 text-sm font-medium text-bg shadow-lg lg:bottom-6"
     >
       {session.status === "paused" ? <Pause size={16} /> : <Timer size={16} className="animate-pulse" />}
       <span className="tabular">{formatClock(shown)}</span>

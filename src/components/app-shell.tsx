@@ -80,7 +80,7 @@ export function AppShell({
 
   return (
     <div className="min-h-dvh lg:grid lg:grid-cols-[240px_1fr]">
-      <aside className="glass sticky top-0 hidden h-dvh flex-col overflow-y-auto border-r border-border/70 px-3 py-5 lg:flex">
+      <aside className="glass sticky top-0 hidden h-dvh flex-col overflow-y-auto border-r border-card-border px-3 py-6 lg:flex">
         <Link href="/dashboard" className="mb-6 px-2">
           <Logo />
         </Link>
@@ -95,7 +95,9 @@ export function AppShell({
                     href={href}
                     className={cn(
                       "press group relative flex items-center gap-3 rounded-xl px-3 py-2 text-sm",
-                      isActive(href) ? "bg-accent-soft font-semibold text-accent" : "text-muted hover:bg-surface-2 hover:text-text",
+                      isActive(href)
+                        ? "bg-gradient-to-r from-accent to-accent-2 font-semibold text-accent-fg shadow-[0_8px_20px_-8px_var(--accent)]"
+                        : "text-muted hover:bg-surface-2/80 hover:text-text",
                     )}
                     aria-current={isActive(href) ? "page" : undefined}
                   >
@@ -157,7 +159,7 @@ export function AppShell({
             </Link>
           </div>
         </header>
-        <main key={pathname} className="animate-in mx-auto w-full max-w-6xl flex-1 px-4 py-6 pb-32 sm:px-6 lg:py-8 lg:pb-10">
+        <main key={pathname} className="page-in mx-auto w-full max-w-6xl flex-1 px-4 py-6 pb-36 sm:px-6 lg:px-10 lg:py-10 lg:pb-12">
           {children}
         </main>
       </div>
@@ -165,7 +167,7 @@ export function AppShell({
       {activeSession && !pathname.startsWith("/focus") && <ActiveSessionPill session={activeSession} />}
 
       <nav
-        className="glass fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-border/60 pb-[env(safe-area-inset-bottom)] lg:hidden"
+        className="glass fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-30 grid grid-cols-5 rounded-[26px] border border-card-border px-1 shadow-pop lg:hidden"
         aria-label="Navegación móvil"
       >
         {NAV.filter((n) => MOBILE_NAV.includes(n.href)).map(({ href, label, icon: Icon }) => (
@@ -173,9 +175,14 @@ export function AppShell({
             key={href}
             href={href}
             aria-current={isActive(href) ? "page" : undefined}
-            className={cn("press flex flex-col items-center gap-1 py-2 text-[11px]", isActive(href) ? "font-semibold text-accent" : "text-muted")}
+            className={cn("press flex flex-col items-center gap-0.5 py-2 text-[10.5px]", isActive(href) ? "font-semibold text-accent" : "text-muted")}
           >
-            <span className={cn("grid h-7 w-12 place-items-center rounded-full transition-colors", isActive(href) && "bg-accent-soft")}>
+            <span
+              className={cn(
+                "grid h-8 w-12 place-items-center rounded-full transition-all duration-300",
+                isActive(href) && "bg-gradient-to-r from-accent to-accent-2 text-accent-fg shadow-[0_6px_16px_-6px_var(--accent)]",
+              )}
+            >
               <Icon size={20} />
             </span>
             {label}
@@ -185,9 +192,14 @@ export function AppShell({
           type="button"
           onClick={() => setMoreOpen(true)}
           aria-haspopup="dialog"
-          className={cn("press relative flex flex-col items-center gap-1 py-2 text-[11px]", inMore ? "font-semibold text-accent" : "text-muted")}
+          className={cn("press relative flex flex-col items-center gap-0.5 py-2 text-[10.5px]", inMore ? "font-semibold text-accent" : "text-muted")}
         >
-          <span className={cn("grid h-7 w-12 place-items-center rounded-full transition-colors", inMore && "bg-accent-soft")}>
+          <span
+            className={cn(
+              "grid h-8 w-12 place-items-center rounded-full transition-all duration-300",
+              inMore && "bg-gradient-to-r from-accent to-accent-2 text-accent-fg shadow-[0_6px_16px_-6px_var(--accent)]",
+            )}
+          >
             <Menu size={20} />
           </span>
           Más
