@@ -81,6 +81,7 @@ test("desarrollo acumulado por categoría", async () => {
   await expect(dev).toContainText("5 h");
   await page.getByRole("link", { name: "Meses" }).click();
   await expect(page.getByRole("heading", { name: "Últimos 12 meses" })).toBeVisible();
+  await expect(page.getByTestId("mastery")).toContainText("Idiomas");
   await snap(page, "d-02-development");
 });
 

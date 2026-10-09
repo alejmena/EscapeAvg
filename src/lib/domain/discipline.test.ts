@@ -229,3 +229,30 @@ describe("frases", () => {
     expect(quoteOfDay("2026-10-09", "suficiencia").themes).toContain("suficiencia");
   });
 });
+
+describe("maestría por habilidad", async () => {
+  const { mastery, symbolicPercentile, etaText } = await import("./development");
+  it("acumula horas por categoría con nivel, progreso y posición simbólica", () => {
+    const cats = [{ id: "math", name: "Matemáticas", color: "#123456", counts: true }];
+    const sessions: ActivitySession[] = [];
+    for (let i = 0; i < 100; i++) {
+      const d = new Date(Date.UTC(2026, 6, 1 + i)).toISOString().slice(0, 10);
+      sessions.push(s(`${d}T06:00:00Z`, `${d}T11:00:00Z`, { category_id: "math" }));
+    }
+    const m = mastery(aggregateDays(sessions, "UTC", cats), "2026-10-08", cats)[0];
+    expect(m.seconds / H).toBe(500);
+    expect(m.level.name).toBe("Competente");
+    expect(m.next?.name).toBe("Avanzado");
+    expect(m.percentile).toBe(70);
+    expect(m.progress).toBeCloseTo(500 / 3000);
+    expect(m.etaDays).toBe(500);
+  });
+  it("curva simbólica creciente y textos de plazo", () => {
+    expect(symbolicPercentile(0)).toBe(0);
+    expect(symbolicPercentile(3000)).toBe(95);
+    expect(symbolicPercentile(20000)).toBe(99.9);
+    expect(etaText(500)).toBe("16 meses");
+    expect(etaText(45)).toBe("45 días");
+    expect(etaText(1000)).toBe("2 años y 9 meses");
+  });
+});

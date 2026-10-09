@@ -201,3 +201,112 @@ export function records(days: Map<ISODate, DayTotals>, goalMinutes: number, week
 export function spanDays(from: ISODate, to: ISODate): number {
   return diffDays(to, from) + 1;
 }
+
+// ---------------------------------------------------------------------------
+// Maestría por habilidad: horas acumuladas en cada categoría hacia una meta de experto.
+// ---------------------------------------------------------------------------
+
+/** Meta de maestría por habilidad (horas). Configurable aquí. */
+export const MASTERY_HOURS = 3000;
+
+export type MasteryLevel = { minHours: number; name: string };
+
+export const MASTERY_LEVELS: readonly MasteryLevel[] = [
+  { minHours: 0, name: "Curiosidad" },
+  { minHours: 20, name: "Aprendiz" },
+  { minHours: 100, name: "Practicante" },
+  { minHours: 300, name: "Competente" },
+  { minHours: 1000, name: "Avanzado" },
+  { minHours: 2000, name: "Experto" },
+  { minHours: 3000, name: "Maestría" },
+];
+
+/**
+ * Posición SIMBÓLICA frente a la gente según horas de práctica. No es una estadística real:
+ * es una curva interna para dar forma al progreso (las primeras horas mueven mucho, luego cada vez menos).
+ */
+const CURVE: [number, number][] = [
+  [0, 0],
+  [20, 40],
+  [100, 55],
+  [300, 65],
+  [500, 70],
+  [1000, 80],
+  [2000, 90],
+  [3000, 95],
+  [5000, 98],
+  [10000, 99.9],
+];
+
+export function symbolicPercentile(hours: number): number {
+  const h = Math.max(0, hours);
+  for (let i = 1; i < CURVE.length; i++) {
+    const [h0, p0] = CURVE[i - 1];
+    const [h1, p1] = CURVE[i];
+    if (h <= h1) return Math.round(p0 + ((h - h0) / (h1 - h0)) * (p1 - p0));
+  }
+  return 99.9;
+}
+
+export type Mastery = {
+  id: string | null;
+  name: string;
+  color: string;
+  seconds: number;
+  level: MasteryLevel;
+  next: MasteryLevel | null;
+  /** 0–1 hacia la meta de maestría. */
+  progress: number;
+  percentile: number;
+  /** Horas al día en los últimos 30 días. */
+  recentDaily: number;
+  /** Días estimados hasta la maestría a ese ritmo (null si no hay ritmo). */
+  etaDays: number | null;
+};
+
+export function mastery(days: Map<ISODate, DayTotals>, today: ISODate, cats: CategoryInfo[]): Mastery[] {
+  const info = new Map(cats.map((c) => [c.id, c]));
+  const total = new Map<string | null, number>();
+  const recent = new Map<string | null, number>();
+  const from30 = addDays(today, -29);
+  for (const [day, t] of days) {
+    for (const [id, secs] of t.byCategory) {
+      total.set(id, (total.get(id) ?? 0) + secs);
+      if (day >= from30 && day <= today) recent.set(id, (recent.get(id) ?? 0) + secs);
+    }
+  }
+  const out: Mastery[] = [];
+  for (const [id, seconds] of total) {
+    if (id === null || seconds < 60) continue;
+    const c = info.get(id);
+    if (!c) continue;
+    const hours = seconds / 3600;
+    let li = 0;
+    for (let i = 0; i < MASTERY_LEVELS.length; i++) if (hours >= MASTERY_LEVELS[i].minHours) li = i;
+    const recentDaily = (recent.get(id) ?? 0) / 3600 / 30;
+    const left = MASTERY_HOURS - hours;
+    out.push({
+      id,
+      name: c.name,
+      color: c.color,
+      seconds,
+      level: MASTERY_LEVELS[li],
+      next: MASTERY_LEVELS[li + 1] ?? null,
+      progress: Math.min(1, hours / MASTERY_HOURS),
+      percentile: symbolicPercentile(hours),
+      recentDaily,
+      etaDays: left > 0 && recentDaily > 0 ? Math.ceil(left / recentDaily) : null,
+    });
+  }
+  return out.sort((a, b) => b.seconds - a.seconds);
+}
+
+/** "3 años y 2 meses", "8 meses", "25 días". */
+export function etaText(days: number): string {
+  if (days < 60) return `${days} días`;
+  const months = Math.round(days / 30.4);
+  if (months < 24) return `${months} meses`;
+  const y = Math.floor(months / 12);
+  const m = months % 12;
+  return m ? `${y} años y ${m} ${m === 1 ? "mes" : "meses"}` : `${y} años`;
+}

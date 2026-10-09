@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Award, CalendarDays, Crown, Flame, Sparkles, Trophy } from "lucide-react";
+import { Award, CalendarDays, Crown, Flame, GraduationCap, Sparkles, Trophy } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { addDays } from "@/lib/domain/dates";
 import { getDiscipline } from "@/lib/data/discipline";
-import { developmentReport, records, series, type Granularity } from "@/lib/domain/development";
+import { developmentReport, etaText, mastery, MASTERY_HOURS, MASTERY_LEVELS, records, series, type Granularity } from "@/lib/domain/development";
 import { goalLabel, hoursText, rankLabel, RANKS } from "@/lib/domain/discipline";
 import { formatShortDate } from "@/lib/format";
 import { Card, CardTitle } from "@/components/ui/card";
@@ -27,12 +27,13 @@ export default async function DevelopmentPage({ searchParams }: { searchParams: 
   const { g } = await searchParams;
   const gran = GRAN.find((x) => x.id === g) ?? GRAN[0];
   const { supabase, profile, today } = await requireUser();
-  const data = await getDiscipline(supabase, profile, addDays(today, -1100), today);
+  const data = await getDiscipline(supabase, profile, addDays(today, -3650), today);
   const report = developmentReport(data.days, today, data.categories);
   const rec = records(data.days, data.goalMinutes, profile.week_starts_on, data.restDays);
   const firstDay = [...data.days.keys()].sort()[0];
   const points = series(data.days, today, gran.id, profile.week_starts_on, firstDay);
   const maxCat = Math.max(1, ...report.current.map((c) => c.seconds));
+  const skills = mastery(data.days, today, data.categories);
 
   return (
     <div className="space-y-6">
@@ -95,6 +96,55 @@ export default async function DevelopmentPage({ searchParams }: { searchParams: 
             )}
           </div>
         </div>
+      </section>
+
+      <section className="card-glass rounded-[28px] p-6 sm:p-8" aria-labelledby="mastery-title" data-testid="mastery">
+        <div className="flex flex-wrap items-end justify-between gap-2">
+          <div>
+            <p id="mastery-title" className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-muted">
+              <GraduationCap size={15} /> Maestría por habilidad
+            </p>
+            <p className="mt-1 text-sm text-muted">
+              Cada hora productiva suma a su habilidad, sea cual sea el tema. Meta de maestría: {MASTERY_HOURS.toLocaleString("es")} h.
+            </p>
+          </div>
+          <p className="text-xs text-muted">Niveles: {MASTERY_LEVELS.map((l) => `${l.name} ${l.minHours} h`).join(" · ")}</p>
+        </div>
+        {skills.length === 0 ? (
+          <p className="mt-5 rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted">
+            Asigna una categoría a tus actividades para empezar a medir tu maestría.
+          </p>
+        ) : (
+          <ul className="mt-5 grid gap-3 md:grid-cols-2">
+            {skills.map((m) => (
+              <li key={m.id} className="rounded-2xl bg-surface-2/70 p-4">
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="flex items-center gap-2 font-semibold">
+                    <span className="h-2.5 w-2.5 rounded-full" style={{ background: m.color }} aria-hidden />
+                    {m.name}
+                  </span>
+                  <span className="rounded-full bg-accent-soft px-2.5 py-0.5 text-xs font-semibold text-accent">{m.level.name}</span>
+                </div>
+                <p className="mt-2 text-sm">
+                  Llevas <span className="font-semibold tabular">{Math.round(m.seconds / 3600).toLocaleString("es")} h</span>: por encima del{" "}
+                  <span className="font-semibold">{m.percentile} %</span> de las personas <span className="text-muted">(simbólico)</span>.
+                </p>
+                <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface">
+                  <div className="bar-in h-full rounded-full" style={{ width: `${Math.max(1, m.progress * 100)}%`, background: m.color }} />
+                </div>
+                <p className="mt-1.5 text-xs text-muted">
+                  {(m.progress * 100).toLocaleString("es", { maximumFractionDigits: 1 })} % hacia la maestría
+                  {m.next && ` · ${Math.ceil(m.next.minHours - m.seconds / 3600)} h para «${m.next.name}»`}
+                  {m.etaDays !== null && ` · a tu ritmo actual (${hoursText(m.recentDaily * 3600)}/día), maestría en ${etaText(m.etaDays)}`}
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
+        <p className="mt-4 text-xs text-muted">
+          El porcentaje de personas es una escala simbólica interna, no una estadística real. La meta de {MASTERY_HOURS.toLocaleString("es")} h
+          es orientativa: la investigación sobre práctica deliberada muestra que las horas necesarias varían mucho según la habilidad.
+        </p>
       </section>
 
       <Card>
