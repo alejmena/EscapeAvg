@@ -1,13 +1,13 @@
 import { cn } from "@/lib/cn";
 
 export function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("min-w-0 rounded-2xl border border-border bg-surface p-5 shadow-[0_1px_2px_rgb(0_0_0/0.04)]", className)} {...props} />;
+  return <div className={cn("min-w-0 rounded-[22px] border border-border/70 bg-surface p-5 shadow-soft", className)} {...props} />;
 }
 
 export function CardTitle({ children, action, icon }: { children: React.ReactNode; action?: React.ReactNode; icon?: React.ReactNode }) {
   return (
     <div className="mb-4 flex items-center justify-between gap-2">
-      <h2 className="flex items-center gap-2 text-sm font-semibold text-text">
+      <h2 className="flex items-center gap-2 text-[15px] font-semibold text-text">
         {icon && <span className="text-muted">{icon}</span>}
         {children}
       </h2>
@@ -19,7 +19,7 @@ export function CardTitle({ children, action, icon }: { children: React.ReactNod
 export function Badge({ children, color, className }: { children: React.ReactNode; color?: string; className?: string }) {
   return (
     <span
-      className={cn("inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-medium bg-surface-2 text-muted", className)}
+      className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium bg-surface-2 text-muted", className)}
       style={color ? { backgroundColor: `${color}22`, color } : undefined}
     >
       {children}
@@ -38,7 +38,10 @@ export function ProgressBar({ value, color, className, label }: { value: number;
       aria-valuemax={100}
       aria-label={label}
     >
-      <div className="h-full rounded-full bg-accent transition-[width] duration-500" style={{ width: `${pct}%`, backgroundColor: color }} />
+      <div
+        className="bar-in h-full rounded-full bg-gradient-to-r from-accent to-accent-2 transition-[width] duration-700"
+        style={{ width: `${pct}%`, ...(color ? { background: color } : {}) }}
+      />
     </div>
   );
 }
@@ -67,7 +70,7 @@ export function ProgressRing({ value, size = 64, stroke = 6, children, color }: 
           strokeLinecap="round"
           strokeDasharray={c}
           strokeDashoffset={c * (1 - v)}
-          style={{ transition: "stroke-dashoffset 600ms ease" }}
+          style={{ transition: "stroke-dashoffset 900ms cubic-bezier(0.22, 1, 0.36, 1)" }}
         />
       </svg>
       <div className="absolute inset-0 grid place-items-center">{children}</div>
@@ -77,8 +80,8 @@ export function ProgressRing({ value, size = 64, stroke = 6, children, color }: 
 
 export function EmptyState({ icon, title, children }: { icon?: React.ReactNode; title: string; children?: React.ReactNode }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border px-6 py-10 text-center">
-      {icon && <div className="text-muted">{icon}</div>}
+    <div className="flex flex-col items-center justify-center gap-2 rounded-[20px] border border-dashed border-border bg-surface-2/40 px-6 py-10 text-center">
+      {icon && <div className="mb-1 grid h-11 w-11 place-items-center rounded-2xl bg-accent-soft text-accent">{icon}</div>}
       <p className="font-medium">{title}</p>
       {children && <div className="text-sm text-muted">{children}</div>}
     </div>
@@ -87,10 +90,10 @@ export function EmptyState({ icon, title, children }: { icon?: React.ReactNode; 
 
 export function PageHeader({ title, subtitle, action }: { title: string; subtitle?: React.ReactNode; action?: React.ReactNode }) {
   return (
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-        {subtitle && <p className="mt-1 text-sm text-muted">{subtitle}</p>}
+    <div className="mb-7 flex flex-wrap items-end justify-between gap-3">
+      <div className="min-w-0">
+        <h1 className="text-[28px] font-bold leading-tight tracking-tight sm:text-[32px]">{title}</h1>
+        {subtitle && <p className="mt-1 max-w-2xl text-[15px] text-muted">{subtitle}</p>}
       </div>
       {action}
     </div>

@@ -19,6 +19,8 @@ import { BarChart } from "@/components/charts/bar-chart";
 import { TaskCheckbox } from "@/components/tasks/task-item";
 import { HabitToggle, RestDayButton } from "@/components/dashboard/widgets";
 import { RecommendationList } from "@/components/dashboard/recommendations";
+import { StandingCard } from "@/components/dashboard/standing-card";
+import { describeYesterday, standing, type Yesterday } from "@/lib/domain/standing";
 import { cn } from "@/lib/cn";
 
 export const metadata: Metadata = { title: "Inicio" };
@@ -29,6 +31,26 @@ function Delta({ c, label }: { c: Comparison; label: string }) {
     <p className={cn("mt-1 flex items-center gap-1 text-xs", c.trend === "up" && c.pct !== null ? "text-success" : "text-muted")}>
       {c.pct !== null && <Icon size={12} />}
       {describeChange(c, label)}
+    </p>
+  );
+}
+
+/** Frase de impacto sobre ayer, con la cifra destacada; nunca castiga el descanso. */
+function YesterdayLine({ y, fallback }: { y: Yesterday | null; fallback: string }) {
+  if (y?.kind === "ratio") {
+    return (
+      <p className="mt-4 text-lg leading-snug sm:text-xl" data-testid="yesterday">
+        Ayer rendiste al <span className="text-gradient text-3xl font-bold tabular sm:text-4xl">{y.pct} %</span> de tu media
+        {y.pct < 100 ? <span className="text-muted">: un día más tranquilo.</span> : "."}
+        <span className="mt-1 block text-sm text-muted">
+          {formatDuration(y.seconds)} de concentración frente a tu media de {formatDuration(y.baselineSeconds)} en días activos.
+        </span>
+      </p>
+    );
+  }
+  return (
+    <p className="mt-4 text-lg leading-snug text-muted" data-testid="yesterday">
+      {describeYesterday(y) ?? fallback}
     </p>
   );
 }
@@ -86,35 +108,41 @@ export default async function DashboardPage() {
   const name = profile.display_name ?? user.email?.split("@")[0] ?? "";
 
   const weekDays = eachDay(weekStart, addDays(weekStart, 6));
+  const standingNow = standing(daily, today, accountStart ?? null);
   const nothingYet = todayStat.focus_seconds === 0 && todayStat.tasks_completed === 0 && todayStat.habits_done === 0;
 
   return (
-    <div className="space-y-6">
-      <section className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="text-sm text-muted">{formatLongDate(today)}</p>
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            {greeting(hour)}
-            {name ? `, ${name}` : ""}.
-          </h1>
-          <p className="mt-1 text-sm text-muted">
-            {nothingYet ? "Un paso pequeño es suficiente para empezar el día." : "Vas sumando. Sigue a tu ritmo."}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Link href="/focus" className={buttonClass("primary", "lg")}>
-            <Play size={18} /> Empezar a concentrarme
-          </Link>
-          <Link href="/focus?just=2" className={buttonClass("secondary", "lg")} title="Solo 2 minutos">
-            <Zap size={18} /> Just Start
-          </Link>
-        </div>
-      </section>
+    <div className="stagger space-y-6">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.35fr_1fr]">
+        <section className="relative overflow-hidden rounded-[28px] border border-border/70 bg-surface p-6 shadow-soft sm:p-8">
+          <div
+            className="animate-glow pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-gradient-to-br from-accent/30 to-accent-2/20 blur-3xl"
+            aria-hidden
+          />
+          <div className="relative">
+            <p className="text-sm font-medium text-muted">{formatLongDate(today)}</p>
+            <h1 className="mt-1 text-[32px] font-bold leading-[1.1] tracking-tight sm:text-[40px]">
+              Hola{name ? `, ${name}` : ""}.
+              <span className="block text-muted">{greeting(hour)}.</span>
+            </h1>
+            <YesterdayLine y={standingNow.yesterday} fallback={nothingYet ? "Un paso pequeño es suficiente para empezar el día." : "Vas sumando. Sigue a tu ritmo."} />
+            <div className="mt-6 flex flex-wrap gap-2">
+              <Link href="/focus" className={buttonClass("primary", "lg")}>
+                <Play size={18} /> Empezar a concentrarme
+              </Link>
+              <Link href="/focus?just=2" className={buttonClass("secondary", "lg")} title="Solo 2 minutos">
+                <Zap size={18} /> Just Start
+              </Link>
+            </div>
+          </div>
+        </section>
+        <StandingCard s={standingNow} />
+      </div>
 
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
         <Link
           href="/progress"
-          className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-border bg-surface px-4 py-3 transition-colors hover:border-accent/40 hover:bg-surface-2"
+          className="lift flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2 rounded-[22px] border border-border/70 bg-surface px-4 py-3 shadow-soft hover:border-accent/40"
           aria-label={`Nivel ${level.level}, ${level.title}. Ver progreso`}
         >
           <span className="flex items-center gap-2 text-sm font-semibold">
@@ -136,7 +164,7 @@ export default async function DashboardPage() {
 
         <Link
           href="/plan"
-          className="group order-first flex min-w-0 items-center gap-3 rounded-2xl border border-accent/30 bg-accent-soft/60 px-4 py-3 text-sm transition-colors hover:border-accent/60 hover:bg-accent-soft"
+          className="lift group order-first flex min-w-0 items-center gap-3 rounded-[22px] border border-accent/30 bg-accent-soft/60 px-4 py-3 text-sm hover:border-accent/60"
         >
           <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-accent text-accent-fg">
             <CalendarClock size={16} />

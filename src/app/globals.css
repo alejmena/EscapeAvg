@@ -3,42 +3,53 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --bg: #f6f6f8;
+  /* Paleta neutra inspirada en las interfaces de Apple; el acento violeta es la marca. */
+  --bg: #f5f5f7;
   --surface: #ffffff;
-  --surface-2: #f0f0f4;
-  --border: #e4e4ea;
-  --text: #121218;
-  --muted: #6b6b78;
+  --surface-2: #f2f2f5;
+  --border: #e3e3e8;
+  --text: #1d1d1f;
+  --muted: #6e6e73;
   --accent: #5b4bf5;
-  --accent-soft: #ecebff;
+  --accent-2: #8b5cf6;
+  --accent-soft: #eeecff;
   --accent-fg: #ffffff;
-  --success: #0f9f6e;
-  --success-soft: #e3f7ef;
-  --warning: #c27803;
-  --warning-soft: #fdf3dc;
-  --danger: #dc2f45;
-  --danger-soft: #fde8eb;
-  --ring: #5b4bf5;
+  --success: #1f8a3e;
+  --success-soft: #e4f6e9;
+  --warning: #b25f00;
+  --warning-soft: #fff1dc;
+  --danger: #d70f2f;
+  --danger-soft: #ffe8eb;
+  --ring: rgb(91 75 245 / 0.45);
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.04), 0 1px 1px rgb(0 0 0 / 0.02);
+  --shadow-md: 0 8px 24px -6px rgb(17 12 46 / 0.1), 0 2px 6px -2px rgb(17 12 46 / 0.06);
+  --shadow-lg: 0 24px 48px -12px rgb(17 12 46 / 0.18);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
   color-scheme: light;
 }
 
 .dark {
-  --bg: #0a0a0e;
-  --surface: #131318;
-  --surface-2: #1b1b22;
-  --border: #26262f;
-  --text: #ededf2;
-  --muted: #8e8e9c;
-  --accent: #8b7eff;
-  --accent-soft: #221f45;
+  --bg: #000000;
+  --surface: #121214;
+  --surface-2: #1c1c1f;
+  --border: #2a2a2e;
+  --text: #f5f5f7;
+  --muted: #98989f;
+  --accent: #8e80ff;
+  --accent-2: #b392ff;
+  --accent-soft: #1f1b3d;
   --accent-fg: #0a0a0e;
-  --success: #34d399;
-  --success-soft: #0f2a21;
-  --warning: #fbbf24;
-  --warning-soft: #2c2310;
-  --danger: #fb7185;
-  --danger-soft: #34151b;
-  --ring: #8b7eff;
+  --success: #30d158;
+  --success-soft: #0e2a17;
+  --warning: #ffb340;
+  --warning-soft: #2e2210;
+  --danger: #ff6177;
+  --danger-soft: #35141a;
+  --ring: rgb(142 128 255 / 0.55);
+  --shadow-sm: 0 0 0 1px rgb(255 255 255 / 0.02);
+  --shadow-md: 0 8px 24px -6px rgb(0 0 0 / 0.6);
+  --shadow-lg: 0 24px 48px -12px rgb(0 0 0 / 0.7);
   color-scheme: dark;
 }
 
@@ -51,6 +62,7 @@
   --color-muted: var(--muted);
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
+  --color-accent-2: var(--accent-2);
   --color-accent-fg: var(--accent-fg);
   --color-success: var(--success);
   --color-success-soft: var(--success-soft);
@@ -58,7 +70,10 @@
   --color-warning-soft: var(--warning-soft);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", ui-sans-serif, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --shadow-soft: var(--shadow-sm);
+  --shadow-float: var(--shadow-md);
+  --shadow-pop: var(--shadow-lg);
   --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
 }
 
@@ -71,21 +86,87 @@ body {
 body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  letter-spacing: -0.006em;
+}
+
+h1,
+h2,
+h3 {
+  letter-spacing: -0.02em;
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--text);
 }
 
 :focus-visible {
-  outline: 2px solid var(--ring);
+  outline: 3px solid var(--ring);
   outline-offset: 2px;
+  border-radius: 10px;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .tabular {
   font-variant-numeric: tabular-nums;
 }
 
+/* Texto con degradado de marca (titulares destacados). */
+.text-gradient {
+  background: linear-gradient(120deg, var(--accent) 10%, var(--accent-2) 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Superficie translúcida tipo "cristal". */
+.glass {
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+}
+
+/* Tarjetas que son enlaces: se elevan ligeramente al pasar por encima. */
+.lift {
+  transition:
+    transform 260ms var(--ease-out),
+    box-shadow 260ms var(--ease-out),
+    border-color 200ms ease;
+}
+@media (hover: hover) {
+  .lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+}
+.lift:active {
+  transform: scale(0.985);
+}
+
+/* Botones: respuesta táctil al pulsar. */
+.press {
+  transition:
+    transform 160ms var(--ease-out),
+    opacity 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease,
+    box-shadow 200ms ease;
+}
+.press:active {
+  transform: scale(0.97);
+}
+
 @keyframes fade-in-up {
   from {
     opacity: 0;
-    transform: translateY(4px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -93,7 +174,81 @@ body {
   }
 }
 .animate-in {
-  animation: fade-in-up 180ms ease-out both;
+  animation: fade-in-up 420ms var(--ease-out) both;
+}
+
+/* Entrada escalonada de los bloques de una página. */
+.stagger > * {
+  animation: fade-in-up 520ms var(--ease-out) both;
+}
+.stagger > *:nth-child(2) {
+  animation-delay: 40ms;
+}
+.stagger > *:nth-child(3) {
+  animation-delay: 80ms;
+}
+.stagger > *:nth-child(4) {
+  animation-delay: 120ms;
+}
+.stagger > *:nth-child(5) {
+  animation-delay: 160ms;
+}
+.stagger > *:nth-child(n + 6) {
+  animation-delay: 200ms;
+}
+
+@keyframes bar-in {
+  from {
+    transform: scaleX(0);
+  }
+}
+.bar-in {
+  transform-origin: left center;
+  animation: bar-in 900ms var(--ease-out) both;
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.pop-in {
+  animation: pop-in 280ms var(--ease-spring) both;
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+@media (max-width: 639px) {
+  .sheet-in {
+    animation: sheet-in 360ms var(--ease-out) both;
+  }
+}
+
+@keyframes glow {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+.animate-glow {
+  animation: glow 8s ease-in-out infinite;
+}
+
+dialog[open]::backdrop {
+  animation: fade-in-up 240ms ease both;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -101,6 +256,7 @@ body {
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
     transition-duration: 0.01ms !important;
   }
 }

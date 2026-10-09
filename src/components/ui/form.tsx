@@ -6,7 +6,7 @@ const width = (className?: string) => (className && /(^|\s)w-/.test(className) ?
 const height = (className?: string) => (className && /(^|\s)h-/.test(className) ? "" : "h-10");
 
 const field =
-  "rounded-xl border border-border bg-surface px-3 text-sm text-text placeholder:text-muted/70 focus:border-accent focus:outline-none transition-colors";
+  "rounded-xl border border-border bg-surface px-3 text-sm text-text placeholder:text-muted/70 transition-[border-color,box-shadow] focus:border-accent focus:shadow-[0_0_0_4px_var(--ring)] focus:outline-none";
 
 export const Input = forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(function Input(
   { className, ...props },

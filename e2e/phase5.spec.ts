@@ -68,4 +68,10 @@ test("plan del día: prioriza lo que vence, explica por qué y respeta tu ritmo"
 
   await page.goto("/dashboard");
   await expect(page.getByRole("link", { name: /Tu plan de hoy/ })).toContainText('Empieza por "Ordenar escritorio"');
+  // Nivel: una cuenta nueva no recibe un nivel inventado, y el porqué se puede abrir.
+  const standing = page.getByTestId("standing");
+  await expect(standing).toContainText("Calibrando");
+  await expect(page.getByTestId("standing-headline")).toContainText("Necesito 7 días de datos");
+  await standing.getByText("¿Por qué?").click();
+  await expect(standing).toContainText("no un ranking de personas");
 });

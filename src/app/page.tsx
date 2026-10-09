@@ -44,13 +44,13 @@ export default async function Home() {
 
       <section className="relative py-20 text-center sm:py-28 animate-in">
         <div
-          className="pointer-events-none absolute inset-x-0 top-10 -z-10 mx-auto h-72 max-w-2xl rounded-full bg-accent/20 blur-3xl dark:bg-accent/15"
+          className="animate-glow pointer-events-none absolute inset-x-0 top-10 -z-10 mx-auto h-72 max-w-2xl rounded-full bg-gradient-to-r from-accent/25 to-accent-2/20 blur-3xl"
           aria-hidden
         />
         <p className="mb-4 inline-block rounded-full border border-border px-3 py-1 text-xs text-muted">Escape the Average</p>
-        <h1 className="mx-auto max-w-3xl text-4xl font-semibold tracking-tight sm:text-6xl">
+        <h1 className="mx-auto max-w-3xl text-[42px] font-bold leading-[1.05] tracking-tight sm:text-7xl">
           Convierte intenciones <br className="hidden sm:block" />
-          en <span className="text-accent">acciones medibles</span>.
+          en <span className="text-gradient">acciones medibles</span>.
         </h1>
         <p className="mx-auto mt-5 max-w-xl text-muted">
           Tareas, concentración, hábitos y estadísticas reales en un solo lugar. Diseñado para quienes posponen, se distraen o
@@ -69,9 +69,9 @@ export default async function Home() {
         </p>
       </section>
 
-      <section className="grid gap-3 pb-24 sm:grid-cols-2 lg:grid-cols-3">
+      <section className="stagger grid gap-3 pb-24 sm:grid-cols-2 lg:grid-cols-3">
         {features.map((f) => (
-          <div key={f.title} className="rounded-2xl border border-border bg-surface p-5 transition-colors hover:border-accent/40">
+          <div key={f.title} className="lift rounded-[22px] border border-border/70 bg-surface p-6 shadow-soft">
             <div className="mb-3 inline-grid h-9 w-9 place-items-center rounded-xl bg-accent-soft text-accent">{f.icon}</div>
             <h2 className="font-medium">{f.title}</h2>
             <p className="mt-1 text-sm text-muted">{f.text}</p>

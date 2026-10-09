@@ -80,7 +80,7 @@ export function AppShell({
 
   return (
     <div className="min-h-dvh lg:grid lg:grid-cols-[240px_1fr]">
-      <aside className="sticky top-0 hidden h-dvh flex-col overflow-y-auto border-r border-border bg-surface px-3 py-5 lg:flex">
+      <aside className="glass sticky top-0 hidden h-dvh flex-col overflow-y-auto border-r border-border/70 px-3 py-5 lg:flex">
         <Link href="/dashboard" className="mb-6 px-2">
           <Logo />
         </Link>
@@ -94,8 +94,8 @@ export function AppShell({
                     key={href}
                     href={href}
                     className={cn(
-                      "group relative flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition-colors",
-                      isActive(href) ? "bg-accent-soft font-medium text-accent" : "text-muted hover:bg-surface-2 hover:text-text",
+                      "press group relative flex items-center gap-3 rounded-xl px-3 py-2 text-sm",
+                      isActive(href) ? "bg-accent-soft font-semibold text-accent" : "text-muted hover:bg-surface-2 hover:text-text",
                     )}
                     aria-current={isActive(href) ? "page" : undefined}
                   >
@@ -142,7 +142,7 @@ export function AppShell({
       </aside>
 
       <div className="flex min-w-0 flex-col">
-        <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-border bg-bg/80 px-4 py-2.5 backdrop-blur lg:hidden">
+        <header className="glass sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-border/60 px-4 py-2.5 lg:hidden">
           <Link href="/dashboard" className="flex min-w-0 items-center gap-2">
             <Logo compact />
             {current && <span className="truncate text-sm font-medium text-muted">{current.label}</span>}
@@ -165,7 +165,7 @@ export function AppShell({
       {activeSession && !pathname.startsWith("/focus") && <ActiveSessionPill session={activeSession} />}
 
       <nav
-        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-border bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
+        className="glass fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-border/60 pb-[env(safe-area-inset-bottom)] lg:hidden"
         aria-label="Navegación móvil"
       >
         {NAV.filter((n) => MOBILE_NAV.includes(n.href)).map(({ href, label, icon: Icon }) => (
@@ -173,7 +173,7 @@ export function AppShell({
             key={href}
             href={href}
             aria-current={isActive(href) ? "page" : undefined}
-            className={cn("flex flex-col items-center gap-1 py-2 text-[11px]", isActive(href) ? "font-medium text-accent" : "text-muted")}
+            className={cn("press flex flex-col items-center gap-1 py-2 text-[11px]", isActive(href) ? "font-semibold text-accent" : "text-muted")}
           >
             <span className={cn("grid h-7 w-12 place-items-center rounded-full transition-colors", isActive(href) && "bg-accent-soft")}>
               <Icon size={20} />
@@ -185,7 +185,7 @@ export function AppShell({
           type="button"
           onClick={() => setMoreOpen(true)}
           aria-haspopup="dialog"
-          className={cn("relative flex flex-col items-center gap-1 py-2 text-[11px]", inMore ? "font-medium text-accent" : "text-muted")}
+          className={cn("press relative flex flex-col items-center gap-1 py-2 text-[11px]", inMore ? "font-semibold text-accent" : "text-muted")}
         >
           <span className={cn("grid h-7 w-12 place-items-center rounded-full transition-colors", inMore && "bg-accent-soft")}>
             <Menu size={20} />
@@ -214,7 +214,7 @@ export function AppShell({
                     onClick={() => setMoreOpen(false)}
                     aria-current={isActive(href) ? "page" : undefined}
                     className={cn(
-                      "flex items-center gap-3 rounded-xl border p-3 transition-colors",
+                      "press flex items-center gap-3 rounded-2xl border p-3",
                       isActive(href) ? "border-accent bg-accent-soft text-accent" : "border-border hover:bg-surface-2",
                     )}
                   >
