@@ -8,6 +8,8 @@ import { compare, describeChange, formatDuration, totals, type Comparison } from
 import { GOAL_METRIC_LABEL } from "@/lib/domain/goals";
 import { formatLongDate, greeting, WEEKDAY_SHORT } from "@/lib/format";
 import { getDaily, getGoalsWithProgress, getRecommendations, getStreak } from "@/lib/data/stats";
+import { getAccountStart } from "@/lib/data/analytics";
+import { CalendarHeatmap } from "@/components/charts/calendar-heatmap";
 import type { Habit, HabitLog, Task } from "@/lib/types";
 import { buttonClass } from "@/components/ui/button";
 import { Card, CardTitle, EmptyState, ProgressBar } from "@/components/ui/card";
@@ -34,12 +36,13 @@ export default async function DashboardPage() {
   const weekStart = startOfWeek(today, profile.week_starts_on);
   const elapsedInWeek = eachDay(weekStart, today).length;
   const prevWeekStart = addDays(weekStart, -7);
+  const heatStart = addDays(weekStart, -7 * 15);
 
-  const [daily, streak, goals, recs, tasksRes, habitsRes, logsRes] = await Promise.all([
-    getDaily(supabase, prevWeekStart, today),
+  const [daily, streak, goals, recs, tasksRes, habitsRes, logsRes, accountStart] = await Promise.all([
+    getDaily(supabase, heatStart, today),
     getStreak(supabase, today),
     getGoalsWithProgress(supabase, today, profile.week_starts_on),
-    getRecommendations(supabase, today),
+    getRecommendations(supabase, today, profile.timezone, profile.week_starts_on),
     supabase
       .from("tasks")
       .select("*")
@@ -51,7 +54,10 @@ export default async function DashboardPage() {
       .limit(8),
     supabase.from("habits").select("*").is("archived_at", null).order("position"),
     supabase.from("habit_logs").select("habit_id, log_date, status").eq("log_date", today),
+    getAccountStart(supabase, profile.timezone),
   ]);
+  // Calendario de las últimas 16 semanas, sin mostrar semanas anteriores a la cuenta.
+  const heatFrom = accountStart && accountStart > heatStart ? accountStart : heatStart;
 
   const byDay = new Map(daily.map((d) => [d.day, d]));
   const todayStat = byDay.get(today)!;
@@ -258,6 +264,11 @@ export default async function DashboardPage() {
           )}
         </Card>
       </div>
+
+      <Card>
+        <CardTitle action={<Link href="/stats/trends" className="text-xs text-accent hover:underline">Ver tendencias</Link>}>Tu constancia</CardTitle>
+        <CalendarHeatmap days={daily} from={heatFrom} to={today} weekStartsOn={profile.week_starts_on} metrics={["active"]} compact />
+      </Card>
 
       <Card>
         <CardTitle>Sugerencias basadas en tus datos</CardTitle>

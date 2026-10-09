@@ -102,7 +102,7 @@ Las comparaciones (semana vs. semana anterior, etc.) y la racha de constancia se
 
 ## 4. Fases
 
-### Fase 1 — MVP funcional (este PR)
+### Fase 1 — MVP funcional
 - Registro, inicio de sesión, cierre de sesión, rutas protegidas.
 - Dashboard: resumen del día, tareas pendientes/completadas, tiempo de concentración, hábitos, racha de constancia,
   progreso semanal, objetivos activos, comparación con ayer y la semana anterior, botón "Empezar a concentrarme".
@@ -115,10 +115,28 @@ Las comparaciones (semana vs. semana anterior, etc.) y la racha de constancia se
 - Estadísticas básicas: hoy / semana / mes / rango, comparación con el período anterior, por categoría, gráfico diario.
 - Recomendaciones iniciales basadas en reglas (tareas pospuestas, estimaciones, hábitos en caída, mejor horario).
 
-### Fase 2 — Análisis avanzado
-Mapas de calor anuales, comparativas mensuales/anuales, tendencias de 90 días, mejores horarios por categoría,
-gráficas interactivas. Se apoya en `stats_daily`, `focus_sessions` y `activity_events`; añadirá vistas
-materializadas si el volumen lo requiere.
+### Fase 2 — Análisis avanzado (implementada)
+Sin cambios de esquema: todo se calcula sobre `stats_daily` y las tablas de origen, así que no requiere migraciones.
+
+- **Estadísticas › Tendencias** (`/stats/trends`): semana, mes y año en curso frente al mismo tramo del período
+  anterior, con frases como "Esta semana te concentraste 12 h, un 25 % más que la semana anterior" (sin porcentaje si la
+  base es muy pequeña o anterior a la cuenta); calendario de actividad de hasta 53 semanas (concentración, tareas,
+  hábitos o actividad; niveles por cuartiles de tu propio historial; al tocar un día se abren sus estadísticas);
+  últimas 12 semanas y 12 meses; tendencia de 90 días con media móvil de 7 días y frase de constancia
+  ("Tu constancia mejoró durante los últimos 90 días…"); récords personales.
+- **Estadísticas › Horarios y patrones** (`/stats/patterns`): mapa de calor día × hora (filtrable por categoría),
+  media por día de la semana con el mejor día si sobresale (≥ 1,4× y ≥ 4 semanas), mejor franja por categoría,
+  % de sesiones terminadas por franja y precisión de estimaciones por categoría.
+- **Estadísticas › Proyectos** (`/stats/projects`): tiempo dedicado, avance, ritmo de las últimas 4 semanas,
+  proyección de fin frente a la fecha objetivo y proyectos parados.
+- **Resumen**: rango "Este año" y descarga CSV de las estadísticas diarias (`/stats/export`).
+- **Inicio**: calendario de constancia de las últimas 16 semanas.
+- **Recomendaciones**: nuevas reglas de constancia (90 días), mejor día de la semana y proyectos retrasados o parados.
+
+Lógica pura y testeada en `lib/domain/analytics.ts`; consultas en `lib/data/analytics.ts` (paginadas: PostgREST de
+Supabase devuelve 1000 filas por petición). Los días se calculan siempre en la zona horaria del perfil
+(`zonedDayStart`, `zonedParts`). Si el volumen crece, las agregaciones pueden pasar a funciones SQL o vistas
+materializadas sin cambiar la interfaz de `lib/domain`.
 
 ### Fase 3 — Gamificación
 Tablas nuevas: `xp_ledger` (asientos derivados de `activity_events`, con regla y referencia al evento),

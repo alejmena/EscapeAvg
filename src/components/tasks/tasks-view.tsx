@@ -3,12 +3,12 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CalendarDays, CheckCircle2, FolderPlus, Inbox, ListTodo, Plus, Sun } from "lucide-react";
+import { CalendarDays, CheckCircle2, FolderPlus, Inbox, ListTodo, Pencil, Plus, Sun } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { formatLongDate } from "@/lib/format";
 import { localDate } from "@/lib/domain/dates";
 import type { Category, Project, Task } from "@/lib/types";
-import { createProject, createTask } from "@/app/(app)/tasks/actions";
+import { createProject, createTask, deleteProject, updateProject } from "@/app/(app)/tasks/actions";
 import { Button } from "@/components/ui/button";
 import { EmptyState, PageHeader } from "@/components/ui/card";
 import { Input, Select } from "@/components/ui/form";
@@ -49,7 +49,7 @@ export function TasksView({
   const params = useSearchParams();
   const [editing, setEditing] = useState<Task | null>(null);
   const [creating, setCreating] = useState(false);
-  const [projectOpen, setProjectOpen] = useState(false);
+  const [projectModal, setProjectModal] = useState<"new" | Project | null>(null);
 
   const catMap = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
   const projMap = useMemo(() => new Map(projects.map((p) => [p.id, p])), [projects]);
@@ -140,7 +140,12 @@ export function TasksView({
             </option>
           ))}
         </Select>
-        <Button variant="ghost" size="sm" onClick={() => setProjectOpen(true)}>
+        {filterProject && projMap.get(filterProject) && (
+          <Button variant="ghost" size="sm" onClick={() => setProjectModal(projMap.get(filterProject)!)}>
+            <Pencil size={14} /> Editar proyecto
+          </Button>
+        )}
+        <Button variant="ghost" size="sm" onClick={() => setProjectModal("new")}>
           <FolderPlus size={15} /> Proyecto
         </Button>
       </div>
@@ -208,7 +213,18 @@ export function TasksView({
           projects={projects}
         />
       )}
-      {projectOpen && <ProjectModal categories={categories} onClose={() => setProjectOpen(false)} />}
+      {projectModal && (
+        <ProjectModal
+          key={projectModal === "new" ? "new" : projectModal.id}
+          categories={categories}
+          project={projectModal === "new" ? null : projectModal}
+          onClose={() => setProjectModal(null)}
+          onDeleted={() => {
+            setProjectModal(null);
+            setParam("project", null);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -242,22 +258,28 @@ function QuickAdd({ defaults }: { defaults: { due_date?: string; category_id?: s
   );
 }
 
-function ProjectModal({ categories, onClose }: { categories: Category[]; onClose: () => void }) {
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("");
-  const [target, setTarget] = useState("");
+const PROJECT_STATUS = [
+  { id: "active", label: "Activo" },
+  { id: "paused", label: "En pausa" },
+  { id: "done", label: "Terminado" },
+] as const;
+
+function ProjectModal({ categories, project, onClose, onDeleted }: { categories: Category[]; project: Project | null; onClose: () => void; onDeleted: () => void }) {
+  const [name, setName] = useState(project?.name ?? "");
+  const [description, setDescription] = useState(project?.description ?? "");
+  const [category, setCategory] = useState(project?.category_id ?? "");
+  const [target, setTarget] = useState(project?.target_date ?? "");
+  const [status, setStatus] = useState<string>(project?.status ?? "active");
   const { run, pending, error } = useAction();
   return (
-    <Modal open onClose={onClose} title="Nuevo proyecto">
+    <Modal open onClose={onClose} title={project ? "Editar proyecto" : "Nuevo proyecto"}>
       <form
         className="space-y-3"
         onSubmit={(e) => {
           e.preventDefault();
-          run(
-            () => createProject({ name, description: description || null, category_id: category || null, target_date: target || null }),
-            onClose,
-          );
+          const input = { name, description: description || null, category_id: category || null, target_date: target || null };
+          if (project) run(() => updateProject(project.id, { ...input, status }), onClose);
+          else run(() => createProject(input), onClose);
         }}
       >
         <Input autoFocus required maxLength={80} placeholder="Nombre del proyecto" value={name} onChange={(e) => setName(e.target.value)} aria-label="Nombre" />
@@ -280,10 +302,33 @@ function ProjectModal({ categories, onClose }: { categories: Category[]; onClose
           </Select>
           <Input type="date" value={target} onChange={(e) => setTarget(e.target.value)} aria-label="Fecha objetivo" />
         </div>
+        {project && (
+          <Select value={status} onChange={(e) => setStatus(e.target.value)} aria-label="Estado del proyecto">
+            {PROJECT_STATUS.map((st) => (
+              <option key={st.id} value={st.id}>
+                {st.label}
+              </option>
+            ))}
+          </Select>
+        )}
         {error && <p className="text-sm text-danger">{error}</p>}
-        <div className="flex justify-end">
+        <div className="flex items-center justify-between gap-2">
+          {project ? (
+            <Button
+              variant="danger"
+              size="sm"
+              disabled={pending}
+              onClick={() => {
+                if (confirm(`¿Eliminar el proyecto "${project.name}"? Sus tareas se conservan, sin proyecto.`)) run(() => deleteProject(project.id), onDeleted);
+              }}
+            >
+              Eliminar
+            </Button>
+          ) : (
+            <span />
+          )}
           <Button type="submit" disabled={pending || !name.trim()}>
-            Crear proyecto
+            {project ? "Guardar" : "Crear proyecto"}
           </Button>
         </div>
       </form>

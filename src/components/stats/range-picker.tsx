@@ -12,6 +12,7 @@ const RANGES = [
   { id: "month", label: "Mes" },
   { id: "30d", label: "30 días" },
   { id: "90d", label: "90 días" },
+  { id: "ytd", label: "Este año" },
   { id: "year", label: "12 meses" },
   { id: "custom", label: "Rango" },
 ];
