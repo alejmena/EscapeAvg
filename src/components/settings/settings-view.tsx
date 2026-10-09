@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { Trash2 } from "lucide-react";
 import type { PomodoroSettings } from "@/lib/domain/timer";
 import type { Category } from "@/lib/types";
@@ -117,8 +118,12 @@ export function SettingsView({ email, profile, categories }: { email: string; pr
       <Card>
         <CardTitle>Privacidad</CardTitle>
         <p className="text-sm text-muted">
-          Tus datos son privados: la base de datos solo permite que tu cuenta lea y escriba tus registros. Las futuras funciones sociales serán
-          opcionales y requerirán tu consentimiento explícito para compartir cualquier estadística.
+          Tus datos son privados: la base de datos solo permite que tu cuenta lea y escriba tus registros. Compartir estadísticas con amigos o
+          grupos es opcional y recíproco, y solo incluye totales (nunca títulos ni notas). Lo decides en{" "}
+          <Link href="/social" className="text-accent hover:underline">
+            Social
+          </Link>
+          .
         </p>
       </Card>
     </div>
