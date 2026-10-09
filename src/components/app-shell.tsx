@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, CheckSquare, Flame, LayoutDashboard, LogOut, Settings, StickyNote, Target, Timer, Trophy, Users } from "lucide-react";
+import { BarChart3, CalendarClock, CheckSquare, Flame, LayoutDashboard, LogOut, Settings, StickyNote, Target, Timer, Trophy, Users } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ActiveSessionPill } from "@/components/focus/active-session-pill";
@@ -12,6 +12,7 @@ import type { FocusSession } from "@/lib/types";
 
 const NAV = [
   { href: "/dashboard", label: "Inicio", icon: LayoutDashboard },
+  { href: "/plan", label: "Plan", icon: CalendarClock },
   { href: "/tasks", label: "Tareas", icon: CheckSquare },
   { href: "/focus", label: "Concentración", icon: Timer },
   { href: "/habits", label: "Hábitos", icon: Flame },
@@ -88,6 +89,9 @@ export function AppShell({
             <Logo compact />
           </Link>
           <div className="flex items-center gap-1">
+            <Link href="/plan" className="rounded-lg p-2 text-muted" aria-label="Plan">
+              <CalendarClock size={18} />
+            </Link>
             <Link href="/notes" className="rounded-lg p-2 text-muted" aria-label="Notas">
               <StickyNote size={18} />
             </Link>

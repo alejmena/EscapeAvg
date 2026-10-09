@@ -110,6 +110,7 @@ test("grupo: crear, invitar por enlace, comparar y desafío compartido", async (
   await expect(leo.getByText("Miembros (2)")).toBeVisible();
   await expect(leo.getByText("1 de 2 ya alcanzaron la meta.")).toBeVisible();
   await expect(leo.getByText("25 / 30 min")).toBeVisible();
+  await expect(leo.getByRole("progressbar", { name: "Progreso de ti" })).toHaveAttribute("aria-valuenow", "83");
   await snap(leo, "p4-03-group-mobile");
 
   await ana.reload();

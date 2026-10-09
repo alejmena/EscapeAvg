@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowDownRight, ArrowRight, ArrowUpRight, CheckCircle2, Flame, Play, Target, Timer, Trophy, Zap } from "lucide-react";
+import { ArrowDownRight, ArrowRight, ArrowUpRight, CalendarClock, CheckCircle2, Flame, Play, Target, Timer, Trophy, Zap } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { addDays, diffDays, eachDay, localHour, startOfWeek, weekday } from "@/lib/domain/dates";
 import { isScheduled } from "@/lib/domain/habits";
@@ -10,6 +10,7 @@ import { formatLongDate, greeting, WEEKDAY_SHORT } from "@/lib/format";
 import { getDaily, getGoalsWithProgress, getRecommendations, getStreak } from "@/lib/data/stats";
 import { getAccountStart } from "@/lib/data/analytics";
 import { getProgress } from "@/lib/data/gamification";
+import { getDayPlan } from "@/lib/data/planner";
 import { CalendarHeatmap } from "@/components/charts/calendar-heatmap";
 import type { Habit, HabitLog, Task } from "@/lib/types";
 import { buttonClass } from "@/components/ui/button";
@@ -39,7 +40,7 @@ export default async function DashboardPage() {
   const prevWeekStart = addDays(weekStart, -7);
   const heatStart = addDays(weekStart, -7 * 15);
 
-  const [daily, streak, goals, recs, tasksRes, habitsRes, logsRes, accountStart, progress] = await Promise.all([
+  const [daily, streak, goals, recs, tasksRes, habitsRes, logsRes, accountStart, progress, plan] = await Promise.all([
     getDaily(supabase, heatStart, today),
     getStreak(supabase, today),
     getGoalsWithProgress(supabase, today, profile.week_starts_on),
@@ -57,7 +58,9 @@ export default async function DashboardPage() {
     supabase.from("habit_logs").select("habit_id, log_date, status").eq("log_date", today),
     getAccountStart(supabase, profile.timezone),
     getProgress(supabase, profile.timezone, today, profile.week_starts_on),
+    getDayPlan(supabase, profile, today),
   ]);
+  const nextUp = plan.items[0];
   const { level } = progress;
   const todayXp = progress.xp.byDay.get(today) ?? 0;
   const newAchievements = progress.achievements.filter((a) => a.unlockedAt && diffDays(today, a.unlockedAt) <= 2);
@@ -128,6 +131,20 @@ export default async function DashboardPage() {
             <Trophy size={13} /> {newAchievements.length === 1 ? `Logro nuevo: ${newAchievements[0].title}` : `${newAchievements.length} logros nuevos`}
           </span>
         )}
+      </Link>
+
+      <Link
+        href="/plan"
+        className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-2xl border border-border bg-surface px-4 py-3 text-sm transition-colors hover:bg-surface-2"
+      >
+        <CalendarClock size={16} className="text-accent" />
+        <span className="font-medium">Tu plan de hoy</span>
+        <span className="min-w-0 flex-1 truncate text-muted">
+          {nextUp
+            ? `Empieza por "${nextUp.task.title}" · ${plan.items.length} ${plan.items.length === 1 ? "tarea" : "tareas"}, ≈ ${formatDuration(plan.plannedMinutes * 60)}`
+            : plan.headline}
+        </span>
+        <ArrowRight size={14} className="text-muted" />
       </Link>
 
       <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">

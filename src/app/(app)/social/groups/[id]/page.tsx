@@ -127,7 +127,7 @@ export default async function GroupPage({ params, searchParams }: { params: Prom
                                 </span>
                               </div>
                               <ProgressBar
-                                value={Math.min(100, (x.v / c.target_value) * 100)}
+                                value={x.v / c.target_value}
                                 color={x.v >= c.target_value ? "var(--success)" : undefined}
                                 label={`Progreso de ${x.id === user.id ? "ti" : (people.get(x.id)?.name ?? "alguien")}`}
                               />
