@@ -28,6 +28,7 @@ d("esquema de base de datos", () => {
       const cats = await asUser(alice, (c) => c.query("select name from categories order by position"));
       expect(cats.rows.map((r) => r.name)).toEqual([
         "Estudio", "Trabajo", "Proyectos personales", "Ejercicio", "Lectura",
+        "Idiomas", "Programación", "Habilidades profesionales", "Cultura",
       ]);
       const boards = await asUser(alice, (c) => c.query("select name from boards"));
       expect(boards.rows).toEqual([{ name: "Mi tablero" }]);
@@ -213,7 +214,8 @@ d("esquema de base de datos", () => {
     it("acepta registros manuales pasados y rechaza los futuros", async () => {
       const { rows } = await asUser(bob, (c) =>
         c.query(
-          "insert into focus_sessions (kind, started_at, ended_at) values ('manual', now() - interval '45 minutes', now()) returning *",
+          // Antes del pomodoro anterior: los registros manuales no pueden solaparse con otras sesiones.
+          "insert into focus_sessions (kind, started_at, ended_at) values ('manual', now() - interval '6 hours', now() - interval '5 hours 15 minutes') returning *",
         ),
       );
       expect(rows[0].status).toBe("completed");

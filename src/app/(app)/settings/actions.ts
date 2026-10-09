@@ -1,8 +1,20 @@
 "use server";
 
 import { z } from "zod";
-import { exec, idSchema, runAction } from "@/lib/actions";
-import { categoryInput, profileInput } from "@/lib/validation/schemas";
+import { ActionError, exec, idSchema, runAction } from "@/lib/actions";
+import { isDisciplineReady } from "@/lib/data/discipline";
+import { categoryInput, dailyGoalInput, profileInput } from "@/lib/validation/schemas";
+
+const SETUP_MISSING = "Falta activar el sistema de disciplina en la base de datos. Sigue el aviso del Inicio.";
+
+/** Objetivo diario de horas productivas. Al cumplirlo, la app lo reconoce como un día completo. */
+export async function updateDailyGoal(minutes: number) {
+  return runAction(async ({ supabase, userId }) => {
+    const value = dailyGoalInput.parse(minutes);
+    if (!(await isDisciplineReady(supabase))) throw new ActionError(SETUP_MISSING);
+    exec(await supabase.from("profiles").update({ daily_goal_minutes: value }).eq("id", userId));
+  });
+}
 
 export async function updateProfile(input: z.input<typeof profileInput>) {
   return runAction(async ({ supabase, userId }) => {
@@ -12,15 +24,22 @@ export async function updateProfile(input: z.input<typeof profileInput>) {
 
 export async function createCategory(input: z.input<typeof categoryInput>) {
   return runAction(async ({ supabase }) => {
-    const data = categoryInput.parse(input);
+    const { counts_as_development, ...data } = categoryInput.parse(input);
+    if (counts_as_development === false && !(await isDisciplineReady(supabase))) throw new ActionError(SETUP_MISSING);
     const { count } = await supabase.from("categories").select("id", { count: "exact", head: true });
-    exec(await supabase.from("categories").insert({ ...data, position: count ?? 0 }));
+    exec(
+      await supabase
+        .from("categories")
+        .insert({ ...data, ...(counts_as_development === false ? { counts_as_development } : {}), position: count ?? 0 }),
+    );
   });
 }
 
 export async function updateCategory(id: string, input: z.input<typeof categoryInput>) {
   return runAction(async ({ supabase }) => {
-    exec(await supabase.from("categories").update(categoryInput.parse(input)).eq("id", idSchema.parse(id)));
+    const data = categoryInput.parse(input);
+    if (data.counts_as_development !== undefined && !(await isDisciplineReady(supabase))) throw new ActionError(SETUP_MISSING);
+    exec(await supabase.from("categories").update(data).eq("id", idSchema.parse(id)));
   });
 }
 

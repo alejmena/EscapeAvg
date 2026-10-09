@@ -55,25 +55,48 @@ export const projectInput = z
   })
   .strict();
 
-export const categoryInput = z.object({ name: trimmed(40), color: hexColor }).strict();
+export const categoryInput = z.object({ name: trimmed(40), color: hexColor, counts_as_development: z.boolean().optional() }).strict();
 
 export const startSessionInput = z
   .object({
     kind: z.enum(["pomodoro", "stopwatch", "just_start", "break"]),
     task_id: optionalUuid,
+    title: optionalText(120),
+    category_id: optionalUuid,
     planned_seconds: z.number().int().min(60).max(14400).nullable().optional(),
   })
   .strict()
   .refine((v) => v.kind === "stopwatch" || v.planned_seconds, { message: "Duración obligatoria" });
 
+export const qualityInput = z.union([z.literal(1), z.literal(2), z.literal(3)]).nullable().optional();
+
+/** Registro manual: por minutos (termina ahora o en `ended_at`) o con hora de inicio y final. */
 export const manualSessionInput = z
   .object({
     task_id: optionalUuid,
-    minutes: z.number().int().min(1).max(720),
+    minutes: z.number().int().min(1).max(720).optional(),
+    started_at: z.string().datetime({ offset: true }).optional(),
     ended_at: z.string().datetime({ offset: true }).optional(),
+    note: optionalText(1000),
+    title: optionalText(120),
+    category_id: optionalUuid,
+    quality: qualityInput,
+    outcome: optionalText(2000),
+  })
+  .strict()
+  .refine((v) => v.minutes || (v.started_at && v.ended_at), { message: "Indica la duración o la hora de inicio y final" });
+
+export const sessionReviewInput = z
+  .object({
+    quality: qualityInput,
+    outcome: optionalText(2000),
     note: optionalText(1000),
   })
   .strict();
+
+export const dailyGoalInput = z.number().int().min(60, "Mínimo 1 hora").max(960, "Máximo 16 horas");
+
+export const quoteIdInput = z.string().regex(/^[a-z0-9-]{1,40}$/);
 
 export const interruptionInput = z
   .object({ session_id: uuid, kind: z.enum(["internal", "external"]), note: optionalText(280) })

@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowDownRight, ArrowRight, ArrowUpRight, CalendarClock, CheckCircle2, Flame, Play, Target, Timer, Trophy, Zap } from "lucide-react";
+import { ArrowDownRight, ArrowRight, ArrowUpRight, CalendarClock, CheckCircle2, Flame, Medal, Play, Target, Trophy, Zap } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { addDays, diffDays, eachDay, localHour, startOfWeek, weekday } from "@/lib/domain/dates";
 import { isScheduled } from "@/lib/domain/habits";
 import { compare, describeChange, formatDuration, totals, type Comparison } from "@/lib/domain/stats";
 import { GOAL_METRIC_LABEL } from "@/lib/domain/goals";
-import { formatLongDate, greeting, WEEKDAY_SHORT } from "@/lib/format";
+import { formatLongDate, formatShortDate, greeting, WEEKDAY_SHORT } from "@/lib/format";
 import { getDaily, getGoalsWithProgress, getRecommendations, getStreak } from "@/lib/data/stats";
 import { getAccountStart } from "@/lib/data/analytics";
 import { getProgress } from "@/lib/data/gamification";
@@ -19,11 +19,17 @@ import { BarChart } from "@/components/charts/bar-chart";
 import { TaskCheckbox } from "@/components/tasks/task-item";
 import { HabitToggle, RestDayButton } from "@/components/dashboard/widgets";
 import { RecommendationList } from "@/components/dashboard/recommendations";
-import { StandingCard } from "@/components/dashboard/standing-card";
 import { ActivityRings } from "@/components/fx/activity-rings";
 import { CountUp } from "@/components/fx/count-up";
-import { describeYesterday, standing, type Yesterday } from "@/lib/domain/standing";
 import { cn } from "@/lib/cn";
+import { getDiscipline } from "@/lib/data/discipline";
+import { hoursText, rankFor, summarize, vsYesterday } from "@/lib/domain/discipline";
+import { quoteOfDay } from "@/lib/domain/quotes";
+import { getFavoriteQuoteIds } from "@/lib/data/discipline";
+import { RankBadge, TodayPanel, type LiveSession } from "@/components/discipline/today-panel";
+import { QuoteCard } from "@/components/discipline/quote-card";
+import { DisciplineSetupNotice, SelfCompare } from "@/components/discipline/summary-cards";
+import type { FocusSession } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Inicio" };
 
@@ -63,28 +69,6 @@ function StatTile({ icon, tone, label, children }: { icon: React.ReactNode; tone
   );
 }
 
-/** Frase de impacto sobre ayer, con la cifra destacada; nunca castiga el descanso. */
-function YesterdayLine({ y, fallback }: { y: Yesterday | null; fallback: string }) {
-  if (y?.kind === "ratio") {
-    return (
-      <p className="mt-5 text-lg font-medium leading-snug sm:text-2xl" data-testid="yesterday">
-        Ayer rendiste al{" "}
-        <CountUp value={y.pct} suffix=" %" duration={1400} className="text-gradient num-xl align-[-0.08em] text-5xl sm:text-6xl" />{" "}
-        de tu media
-        {y.pct < 100 ? <span className="text-muted">: un día más tranquilo.</span> : "."}
-        <span className="mt-1 block text-sm text-muted">
-          {formatDuration(y.seconds)} de concentración frente a tu media de {formatDuration(y.baselineSeconds)} en días activos.
-        </span>
-      </p>
-    );
-  }
-  return (
-    <p className="mt-4 text-lg leading-snug text-muted" data-testid="yesterday">
-      {describeYesterday(y) ?? fallback}
-    </p>
-  );
-}
-
 export default async function DashboardPage() {
   const { supabase, profile, today, user } = await requireUser();
   const weekStart = startOfWeek(today, profile.week_starts_on);
@@ -92,7 +76,8 @@ export default async function DashboardPage() {
   const prevWeekStart = addDays(weekStart, -7);
   const heatStart = addDays(weekStart, -7 * 15);
 
-  const [daily, streak, goals, recs, tasksRes, habitsRes, logsRes, accountStart, progress, plan] = await Promise.all([
+  const disciplineFrom = addDays(today, -400);
+  const [daily, streak, goals, recs, tasksRes, habitsRes, logsRes, accountStart, progress, plan, discipline, activeRes] = await Promise.all([
     getDaily(supabase, heatStart, today),
     getStreak(supabase, today),
     getGoalsWithProgress(supabase, today, profile.week_starts_on),
@@ -111,7 +96,19 @@ export default async function DashboardPage() {
     getAccountStart(supabase, profile.timezone),
     getProgress(supabase, profile.timezone, today, profile.week_starts_on),
     getDayPlan(supabase, profile, today),
+    getDiscipline(supabase, profile, disciplineFrom, today),
+    supabase.from("focus_sessions").select("*").in("status", ["running", "paused"]).maybeSingle<FocusSession>(),
   ]);
+  const favorites = await getFavoriteQuoteIds(supabase, discipline.ready);
+  const summary = summarize({ days: discipline.days, today, weekStart, goalMinutes: discipline.goalMinutes, restDays: discipline.restDays });
+  // La actividad en curso suma en vivo si su categoría cuenta como desarrollo.
+  const activeRow = activeRes.data;
+  const activeCategory = activeRow?.category_id ?? null;
+  const live: LiveSession | null =
+    activeRow && activeRow.kind !== "break"
+      ? { ...activeRow, counts: !activeCategory || discipline.categories.find((c) => c.id === activeCategory)?.counts !== false }
+      : null;
+  const quote = quoteOfDay(today, summary.goalReached ? "suficiencia" : undefined);
   const nextUp = plan.items[0];
   const { level } = progress;
   const todayXp = progress.xp.byDay.get(today) ?? 0;
@@ -138,50 +135,86 @@ export default async function DashboardPage() {
   const name = profile.display_name ?? user.email?.split("@")[0] ?? "";
 
   const weekDays = eachDay(weekStart, addDays(weekStart, 6));
-  const standingNow = standing(daily, today, accountStart ?? null);
   const habitsDone = habits.filter((h) => doneHabitIds.has(h.id)).length;
-  // Metas de los anillos: tu objetivo semanal repartido en 7 días (1 h si no tienes) y las tareas de hoy.
-  const focusTarget = goalSeconds > 0 ? Math.round(goalSeconds / 7 / 60) * 60 : 3600;
+  // Metas de los anillos: tu objetivo diario de disciplina y las tareas de hoy.
+  const focusTarget = discipline.goalMinutes * 60;
   const tasksTarget = todayStat.tasks_completed + tasks.length;
-  const nothingYet = todayStat.focus_seconds === 0 && todayStat.tasks_completed === 0 && todayStat.habits_done === 0;
 
   return (
     <div className="stagger space-y-6">
-      <section className="card-glass relative overflow-hidden rounded-[32px] p-6 sm:p-8">
-        <div
-          className="animate-glow pointer-events-none absolute -right-20 -top-28 h-80 w-80 rounded-full bg-gradient-to-br from-accent/40 via-accent-2/25 to-ring-focus/20 blur-3xl"
-          aria-hidden
-        />
-        <div className="relative grid items-center gap-8 lg:grid-cols-[1fr_auto]">
-          <div className="min-w-0">
-            <p className="text-sm font-semibold uppercase tracking-wider text-muted">{formatLongDate(today)}</p>
-            <h1 className="mt-2 text-[40px] font-bold leading-[1.02] tracking-tight sm:text-[56px]">
-              Hola{name ? `, ${name}` : ""}.
-              <span className="text-gradient block">{greeting(hour)}.</span>
-            </h1>
-            <YesterdayLine y={standingNow.yesterday} fallback={nothingYet ? "Un paso pequeño es suficiente para empezar el día." : "Vas sumando. Sigue a tu ritmo."} />
-            <div className="mt-7 flex flex-wrap gap-2">
-              <Link href="/focus" className={buttonClass("primary", "lg")}>
-                <Play size={18} /> Empezar a concentrarme
-              </Link>
-              <Link href="/focus?just=2" className={buttonClass("secondary", "lg")} title="Solo 2 minutos">
-                <Zap size={18} /> Just Start
-              </Link>
-            </div>
+      {!discipline.ready && <DisciplineSetupNotice />}
+
+      <TodayPanel
+        baseSeconds={summary.todaySeconds}
+        goalMinutes={discipline.goalMinutes}
+        active={live}
+        today={today}
+        dateLabel={formatLongDate(today)}
+        hello={`Hola${name ? `, ${name}` : ""}. ${greeting(hour)}`}
+      />
+
+      <section className="grid gap-3 md:grid-cols-3" aria-label="Tu progreso frente a ti mismo">
+        <div className="card-glass rounded-[24px] p-5" data-testid="yesterday">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted">Ayer</p>
+          {summary.yesterday.rank.id !== "inicio" && <RankBadge rank={summary.yesterday.rank} className="mt-3 text-xs" />}
+          <p className="mt-3 text-[15px] font-medium leading-snug">{summary.yesterday.text}</p>
+        </div>
+        <div className="card-glass rounded-[24px] p-5" data-testid="today-vs">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted">Hoy</p>
+          <p className="num-xl mt-3 text-[28px]">{hoursText(summary.todaySeconds)}</p>
+          <p className="mt-2 text-[15px] font-medium leading-snug">{vsYesterday(summary.todaySeconds, summary.yesterday.seconds)}</p>
+        </div>
+        <div className="card-glass rounded-[24px] p-5" data-testid="week-goal">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted">Esta semana</p>
+          <div className="mt-3 flex gap-1.5" aria-hidden>
+            {eachDay(weekStart, addDays(weekStart, 6)).map((d) => {
+              const secs = d === today ? summary.todaySeconds : (discipline.days.get(d)?.productive ?? 0);
+              const hit = d <= today && secs >= discipline.goalMinutes * 60;
+              const rest = d <= today && !hit && discipline.restDays.has(d);
+              return (
+                <span key={d} className="flex flex-1 flex-col items-center gap-1">
+                  <span
+                    className={cn(
+                      "h-7 w-full rounded-lg",
+                      hit ? "bg-gradient-to-b from-[var(--gold-2)] to-[var(--gold)]" : rest ? "bg-ring-habits/30" : d > today ? "bg-surface-2/50" : "bg-surface-2",
+                    )}
+                    title={`${formatLongDate(d)}: ${hoursText(secs)}`}
+                  />
+                  <span className="text-[10px] text-muted">{WEEKDAY_SHORT[weekday(d)]}</span>
+                </span>
+              );
+            })}
           </div>
-          <div className="flex flex-col items-center gap-5 sm:flex-row lg:flex-col xl:flex-row">
-            <ActivityRings
-              size={216}
-              rings={[
-                { label: "Concentración", value: focusTarget ? todayStat.focus_seconds / focusTarget : 0, color: "var(--ring-focus)", color2: "var(--ring-focus-2)" },
-                { label: "Tareas", value: tasksTarget ? todayStat.tasks_completed / tasksTarget : 0, color: "var(--ring-tasks)", color2: "var(--ring-tasks-2)" },
-                { label: "Hábitos", value: habits.length ? habitsDone / habits.length : 0, color: "var(--ring-habits)", color2: "var(--ring-habits-2)" },
-              ]}
-            />
-            <ul className="space-y-3 text-sm" aria-label="Anillos de hoy">
-              <RingLegend color="var(--ring-focus)" label="Concentración">
-                <CountUp value={todayStat.focus_seconds} kind="duration" />
-                <span className="text-muted"> / {formatDuration(focusTarget)}</span>
+          <p className="mt-2 text-[15px] font-medium leading-snug">{summary.week.text}</p>
+        </div>
+      </section>
+
+      <div className="grid gap-4 lg:grid-cols-[1.3fr_1fr]">
+        <QuoteCard quote={quote} favorite={favorites.includes(quote.id)} ready={discipline.ready} />
+        <SelfCompare
+          best={summary.best ? { ...summary.best, label: formatShortDate(summary.best.day), rank: rankFor(summary.best.seconds) } : null}
+          avg30={summary.avg30}
+          todaySeconds={summary.todaySeconds}
+          goalStreak={summary.goalStreak}
+        />
+      </div>
+
+      <section className="card-glass relative overflow-hidden rounded-[28px] p-6">
+        <div className="grid items-center gap-6 sm:grid-cols-[auto_1fr]">
+          <ActivityRings
+            size={176}
+            rings={[
+              { label: "Desarrollo", value: focusTarget ? summary.todaySeconds / focusTarget : 0, color: "var(--ring-focus)", color2: "var(--ring-focus-2)" },
+              { label: "Tareas", value: tasksTarget ? todayStat.tasks_completed / tasksTarget : 0, color: "var(--ring-tasks)", color2: "var(--ring-tasks-2)" },
+              { label: "Hábitos", value: habits.length ? habitsDone / habits.length : 0, color: "var(--ring-habits)", color2: "var(--ring-habits-2)" },
+            ]}
+          />
+          <div className="min-w-0">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted">Tus anillos de hoy</p>
+            <ul className="mt-3 grid gap-3 text-sm sm:grid-cols-3" aria-label="Anillos de hoy">
+              <RingLegend color="var(--ring-focus)" label="Desarrollo">
+                {hoursText(summary.todaySeconds)}
+                <span className="text-muted"> / {hoursText(focusTarget)}</span>
               </RingLegend>
               <RingLegend color="var(--ring-tasks)" label="Tareas">
                 <CountUp value={todayStat.tasks_completed} />
@@ -192,13 +225,20 @@ export default async function DashboardPage() {
                 <span className="text-muted"> / {habits.length}</span>
               </RingLegend>
             </ul>
+            <div className="mt-5 flex flex-wrap gap-2">
+              <Link href="/focus" className={buttonClass("secondary", "md")}>
+                <Play size={16} /> Empezar a concentrarme
+              </Link>
+              <Link href="/focus?just=2" className={buttonClass("ghost", "md")} title="Solo 2 minutos">
+                <Zap size={16} /> Just Start
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <StandingCard s={standingNow} />
-        <div className="grid content-start gap-4">
+        <div className="contents">
           <Link href="/plan" className="lift card-glass group flex min-w-0 items-center gap-4 rounded-[24px] p-5">
             <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-accent to-accent-2 text-accent-fg shadow-float">
               <CalendarClock size={22} />
@@ -240,11 +280,14 @@ export default async function DashboardPage() {
       </div>
 
       <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatTile icon={<Timer size={18} />} tone="from-ring-focus to-[var(--ring-focus-2)]" label="Concentración hoy">
+        <StatTile icon={<Medal size={18} />} tone="from-[var(--gold)] to-[var(--gold-2)]" label="Concentración registrada hoy">
           <p className="num-xl mt-3 text-[22px] sm:text-[28px]">
             <CountUp value={todayStat.focus_seconds} kind="duration" />
           </p>
           <Delta c={focusVsYesterday} label="ayer" />
+          {todayStat.focus_seconds - summary.todaySeconds >= 60 && (
+            <p className="mt-1 text-xs text-muted">{hoursText(todayStat.focus_seconds - summary.todaySeconds)} no cuentan como desarrollo</p>
+          )}
         </StatTile>
         <StatTile icon={<CheckCircle2 size={18} />} tone="from-ring-tasks to-[var(--ring-tasks-2)]" label="Tareas completadas">
           <p className="num-xl mt-3 text-[22px] sm:text-[28px]">

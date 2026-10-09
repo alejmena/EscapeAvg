@@ -6,6 +6,7 @@ import { cn } from "@/lib/cn";
 
 const TABS = [
   { href: "/stats", label: "Resumen" },
+  { href: "/stats/development", label: "Desarrollo" },
   { href: "/stats/trends", label: "Tendencias" },
   { href: "/stats/patterns", label: "Horarios y patrones" },
   { href: "/stats/projects", label: "Proyectos" },

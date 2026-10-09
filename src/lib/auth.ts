@@ -28,6 +28,7 @@ export const requireUser = cache(async () => {
     weekly_focus_goal_minutes: 600,
     streaks_enabled: true,
     share_stats: false,
+    daily_goal_minutes: null,
   };
   const today = localDate(new Date(), safeProfile.timezone);
   return { supabase, user, profile: safeProfile, today };
