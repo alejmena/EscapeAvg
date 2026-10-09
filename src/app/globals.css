@@ -1,0 +1,106 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --bg: #f6f6f8;
+  --surface: #ffffff;
+  --surface-2: #f0f0f4;
+  --border: #e4e4ea;
+  --text: #121218;
+  --muted: #6b6b78;
+  --accent: #5b4bf5;
+  --accent-soft: #ecebff;
+  --accent-fg: #ffffff;
+  --success: #0f9f6e;
+  --success-soft: #e3f7ef;
+  --warning: #c27803;
+  --warning-soft: #fdf3dc;
+  --danger: #dc2f45;
+  --danger-soft: #fde8eb;
+  --ring: #5b4bf5;
+  color-scheme: light;
+}
+
+.dark {
+  --bg: #0a0a0e;
+  --surface: #131318;
+  --surface-2: #1b1b22;
+  --border: #26262f;
+  --text: #ededf2;
+  --muted: #8e8e9c;
+  --accent: #8b7eff;
+  --accent-soft: #221f45;
+  --accent-fg: #0a0a0e;
+  --success: #34d399;
+  --success-soft: #0f2a21;
+  --warning: #fbbf24;
+  --warning-soft: #2c2310;
+  --danger: #fb7185;
+  --danger-soft: #34151b;
+  --ring: #8b7eff;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-fg: var(--accent-fg);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.animate-in {
+  animation: fade-in-up 180ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
