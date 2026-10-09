@@ -1,7 +1,8 @@
+import { useId } from "react";
 import { cn } from "@/lib/cn";
 
 export function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("min-w-0 rounded-[22px] border border-border/70 bg-surface p-5 shadow-soft", className)} {...props} />;
+  return <div className={cn("card-glass min-w-0 rounded-[24px] p-5", className)} {...props} />;
 }
 
 export function CardTitle({ children, action, icon }: { children: React.ReactNode; action?: React.ReactNode; icon?: React.ReactNode }) {
@@ -53,24 +54,34 @@ export function ProgressRing({ value, size = 64, stroke = 6, children, color }: 
   children?: React.ReactNode;
   color?: string;
 }) {
+  const gid = `pr${useId().replace(/:/g, "")}`;
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   const v = Math.max(0, Math.min(1, value));
   return (
     <div className="relative inline-grid place-items-center" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="-rotate-90" aria-hidden>
-        <circle cx={size / 2} cy={size / 2} r={r} stroke="var(--surface-2)" strokeWidth={stroke} fill="none" />
+      <svg width={size} height={size} className="-rotate-90 overflow-visible" aria-hidden>
+        <defs>
+          <linearGradient id={gid} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor={color ?? "var(--accent)"} />
+            <stop offset="100%" stopColor={color ?? "var(--accent-2)"} />
+          </linearGradient>
+        </defs>
+        <circle cx={size / 2} cy={size / 2} r={r} stroke={color ?? "var(--accent)"} strokeOpacity={0.14} strokeWidth={stroke} fill="none" />
         <circle
           cx={size / 2}
           cy={size / 2}
           r={r}
-          stroke={color ?? "var(--accent)"}
+          stroke={`url(#${gid})`}
           strokeWidth={stroke}
           fill="none"
           strokeLinecap="round"
           strokeDasharray={c}
           strokeDashoffset={c * (1 - v)}
-          style={{ transition: "stroke-dashoffset 900ms cubic-bezier(0.22, 1, 0.36, 1)" }}
+          style={{
+            transition: "stroke-dashoffset 900ms cubic-bezier(0.22, 1, 0.36, 1)",
+            filter: size >= 160 ? `drop-shadow(0 0 10px ${color ?? "var(--accent)"})` : undefined,
+          }}
         />
       </svg>
       <div className="absolute inset-0 grid place-items-center">{children}</div>

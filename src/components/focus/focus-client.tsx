@@ -231,7 +231,7 @@ export function FocusClient({
                 {KIND_LABEL[session.kind]}
                 {session.status === "paused" && " · en pausa"}
               </div>
-              <ProgressRing value={session.planned_seconds ? progress : 1} size={240} stroke={8} color={isBreak ? "var(--success)" : undefined}>
+              <ProgressRing value={session.planned_seconds ? progress : 1} size={268} stroke={14} color={isBreak ? "var(--success)" : undefined}>
                 <div>
                   <p className={cn("tabular text-5xl font-light tracking-tight", session.status === "paused" && "opacity-50")}>{formatClock(clock)}</p>
                   {session.planned_seconds && <p className="mt-1 text-xs text-muted">{formatDuration(elapsed)} concentrado</p>}
@@ -343,13 +343,15 @@ export function FocusClient({
                 ))}
               </div>
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1 sm:gap-4">
                 {mode === "pomodoro" && (
                   <button type="button" onClick={() => setMinutes(Math.max(5, minutes - 5))} className="rounded-full p-2 text-muted hover:bg-surface-2" aria-label="Menos 5 minutos">
                     <Minus size={18} />
                   </button>
                 )}
-                <p className="tabular text-6xl font-light tracking-tight sm:text-7xl">{mode === "pomodoro" ? formatClock(minutes * 60) : "00:00"}</p>
+                <ProgressRing value={mode === "pomodoro" ? minutes / 60 : 0} size={224} stroke={12}>
+                  <p className="tabular text-[52px] font-light tracking-tight">{mode === "pomodoro" ? formatClock(minutes * 60) : "00:00"}</p>
+                </ProgressRing>
                 {mode === "pomodoro" && (
                   <button type="button" onClick={() => setMinutes(Math.min(180, minutes + 5))} className="rounded-full p-2 text-muted hover:bg-surface-2" aria-label="Más 5 minutos">
                     <Plus size={18} />
@@ -452,7 +454,7 @@ function HistoryCard({ history, timezone }: { history: HistoryItem[]; timezone: 
         <div className="-mr-2 space-y-4 pr-2 lg:max-h-[calc(100dvh-10rem)] lg:overflow-y-auto">
           {[...groups].map(([day, items]) => (
             <div key={day}>
-              <p className="sticky top-0 z-10 mb-1 bg-surface py-0.5 text-xs font-medium text-muted">
+              <p className="sticky top-0 z-10 mb-1 rounded-lg bg-card py-0.5 text-xs font-medium text-muted backdrop-blur-xl">
                 {formatLongDate(day)} · {formatDuration(items.filter((i) => i.status === "completed" && i.kind !== "break").reduce((a, i) => a + (i.focus_seconds ?? 0), 0))}
               </p>
               <ul className="space-y-1">

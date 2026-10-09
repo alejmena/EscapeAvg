@@ -38,7 +38,7 @@ export function StandingCard({ s }: { s: Standing }) {
   const pos = scalePos(s.avgMinutes);
   return (
     <section
-      className="relative overflow-hidden rounded-[22px] border border-border/70 bg-surface p-5 shadow-soft"
+      className="relative overflow-hidden card-glass rounded-[24px] p-5"
       aria-labelledby="standing-title"
       data-testid="standing"
     >
