@@ -129,12 +129,16 @@ test("notas adhesivas: crear, escribir, autoguardar y convertir en tarea", async
   await page.mouse.move(box.x + 20, box.y + 10);
   await page.mouse.down();
   await page.mouse.move(box.x + 320, box.y + 160, { steps: 8 });
+  // Espera a que la nueva posición llegue al servidor antes de recargar.
+  const moved = page.waitForResponse((r) => r.request().method() === "POST" && r.request().headers()["next-action"] !== undefined);
   await page.mouse.up();
+  await moved;
   await expect(page.getByText("Guardado")).toBeVisible();
   await page.reload();
   await expect(page.getByLabel("Contenido de la nota").first()).toHaveValue(/Preparar presentación/);
-  const after = (await page.getByLabel("Mover nota (flechas del teclado)").first().boundingBox())!;
-  expect(after.x - box.x).toBeGreaterThan(250);
+  const afterHandle = page.getByLabel("Mover nota (flechas del teclado)").first();
+  await expect(afterHandle).toBeVisible();
+  await expect.poll(async () => ((await afterHandle.boundingBox())?.x ?? box.x) - box.x).toBeGreaterThan(250);
   await page.getByRole("button", { name: "Convertir en tarea" }).click();
   await expect(page.getByTitle("Convertida en tarea")).toBeVisible();
   await snap(page, "07-notes");
