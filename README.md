@@ -9,7 +9,7 @@ Arquitectura, modelo de datos y plan por fases: [`docs/ARCHITECTURE.md`](docs/AR
 
 Next.js 16 (App Router, Server Actions) · React 19 · TypeScript · Tailwind CSS 4 · Supabase (Postgres, Auth, RLS) · Zod · Vitest · Playwright.
 
-## Qué incluye (Fases 1 y 2)
+## Qué incluye (Fases 1, 2 y 3)
 
 | Área | Funciona |
 |---|---|
@@ -22,6 +22,7 @@ Next.js 16 (App Router, Server Actions) · React 19 · TypeScript · Tailwind CS
 | Objetivos | Semanales, mensuales o por fechas; minutos de concentración, tareas, hábitos o manual; por categoría; progreso calculado con datos reales. |
 | Estadísticas | Hoy, semana, mes, 30/90 días, 12 meses o rango; comparación con el período anterior equivalente; concentración y tareas por día/semana/mes; por categoría; horas del día; mejores días; días activos; cumplimiento de fechas y hábitos; estimado vs. real; interrupciones. |
 | Análisis avanzado (Fase 2) | Comparativas semana/mes/año con el mismo tramo anterior, calendario de actividad (mapa de calor), últimas 12 semanas y 12 meses, tendencia de 90 días, récords personales, mapa de calor día × hora por categoría, mejor día y franja, sesiones terminadas por franja, estimado vs. real por categoría, estadísticas por proyecto con proyección de fin, exportación CSV. |
+| Progreso (Fase 3) | Niveles y XP calculados solo con actividad real (concentración medida, tareas con antigüedad mínima, hábitos, días y semanas constantes, objetivos alcanzados) con topes anti‑abuso; 26 logros con fecha de desbloqueo; desafíos personales de 7 días basados en tu media; XP por semana y récords; barra de nivel en Inicio. |
 | Recomendaciones | Motor de reglas con evidencia visible: tareas pospuestas, dificultad para empezar, hábitos en caída, precisión de estimaciones, mejor franja horaria, interrupciones, constancia de 90 días, mejor día de la semana, proyectos retrasados o parados. Interfaz preparada para un proveedor de IA. |
 | UX | Modo claro/oscuro/sistema, responsive con navegación inferior en móvil, PWA instalable (manifest), accesibilidad básica (roles ARIA, foco visible, movimiento reducido). |
 
@@ -40,7 +41,7 @@ Sin variables de entorno, la app muestra `/setup` con estas instrucciones.
 
 | Comando | Qué prueba |
 |---|---|
-| `npm test` | Lógica de dominio (fechas y zonas horarias, recurrencia, rachas, hábitos, estadísticas, análisis avanzado, temporizador, objetivos, Just Start, recomendaciones). |
+| `npm test` | Lógica de dominio (fechas y zonas horarias, recurrencia, rachas, hábitos, estadísticas, análisis avanzado, gamificación, temporizador, objetivos, Just Start, recomendaciones). |
 | `npm run test:db` | Migraciones, RLS, triggers y funciones SQL contra un Postgres real. Requiere `TEST_DATABASE_URL` (un Postgres vacío; **la base se reinicia**). |
 | `npm run test:e2e` | Flujo completo en el navegador contra la app en marcha y un Supabase real: registro, tareas, recurrencia, pomodoro, Just Start, hábitos, notas, objetivos, estadísticas, privacidad entre usuarios, móvil/oscuro. |
 | `npm run lint` / `npm run typecheck` | ESLint y TypeScript. |
@@ -51,7 +52,7 @@ CI (`.github/workflows/ci.yml`) ejecuta todo lo anterior; las pruebas E2E usan `
 
 ```
 src/app/(auth)        login, registro, Server Actions de autenticación
-src/app/(app)         dashboard, tasks, focus, habits, notes, goals, stats, settings (+ actions.ts por sección)
+src/app/(app)         dashboard, tasks, focus, habits, notes, goals, stats, progress, settings (+ actions.ts por sección)
 src/components        UI por funcionalidad y primitivos en ui/
 src/lib/domain        lógica pura y testeada
 src/lib/data          consultas de estadísticas (servidor)

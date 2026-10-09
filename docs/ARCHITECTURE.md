@@ -138,10 +138,27 @@ Supabase devuelve 1000 filas por petición). Los días se calculan siempre en la
 (`zonedDayStart`, `zonedParts`). Si el volumen crece, las agregaciones pueden pasar a funciones SQL o vistas
 materializadas sin cambiar la interfaz de `lib/domain`.
 
-### Fase 3 — Gamificación
-Tablas nuevas: `xp_ledger` (asientos derivados de `activity_events`, con regla y referencia al evento),
-`achievements` / `user_achievements`, `challenges`. Niveles = función de XP. Reglas anti‑abuso: XP solo por
-tiempo de concentración real, tareas con antigüedad mínima y hábitos, con topes diarios.
+### Fase 3 — Gamificación (implementada)
+Sin cambios de esquema: el XP **no se guarda**, se recalcula en cada visita a partir de los datos verificados
+(sesiones, tareas, registros de hábitos, objetivos y días de descanso). Así no hay nada que migrar, no se puede
+inflar a mano y, si el usuario borra una sesión o reabre una tarea, el XP se ajusta solo.
+
+- **XP** (`XP_RULES` en `lib/domain/gamification.ts`): 1 XP por minuto de concentración (máx. 120 min por sesión y
+  480 XP al día; el registro manual cuenta la mitad); +10 por Just Start (≥ 90 s, máx. 3 al día); +10 por tarea y +3
+  por paso solo si tenían ≥ 10 min de antigüedad o ≥ 5 min medidos (máx. 15 tareas y 20 pasos al día); +15 por hábito;
+  +20 por día activo; +50 por semana constante (4 días activos, cada descanso justificado reduce lo exigido);
+  +50/+150 por objetivo semanal/mensual alcanzado y hasta +150 por desafío (máx. 3 por semana; los objetivos manuales
+  o triviales no dan XP).
+- **Niveles**: el nivel L→L+1 cuesta `150 + 75·(L−1)` XP; títulos de "Primer paso" a "Leyenda".
+- **Logros**: 26 logros (primeros pasos, horas acumuladas, tareas, rachas, sesiones profundas, Just Start, horarios,
+  estimaciones, hábitos, semanas constantes, regreso tras una pausa, objetivos) con fecha de desbloqueo calculada.
+- **Desafíos personales**: sugerencias de 7 días un ~10 % por encima de la media de las últimas 4 semanas; al
+  aceptarlas se crean como objetivo por fechas (`period = custom`), así que reutilizan el progreso de Objetivos.
+- **Pantallas**: `/progress` (nivel, XP de hoy y de la semana, XP por fuente, reglas, desafíos, XP por semana,
+  récords y logros) y barra de nivel en Inicio. Los objetivos por fechas vencidos pasan a "Anteriores".
+
+Lógica pura y testeada en `lib/domain/gamification.ts`; consultas paginadas en `lib/data/gamification.ts`. Si el
+historial crece mucho, el cálculo puede pasar a una tabla `xp_ledger` materializada sin cambiar la interfaz.
 
 ### Fase 4 — Social
 Tablas nuevas: `friendships` (solicitud/aceptación), `groups`, `group_members`, `shared_challenges`,
