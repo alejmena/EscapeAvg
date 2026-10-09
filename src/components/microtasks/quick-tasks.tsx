@@ -53,7 +53,7 @@ export function QuickTasks({ tasks, templates, today }: { tasks: QuickTask[]; te
   const [undo, setUndo] = useState<Undo | null>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
   const listRef = useRef<HTMLUListElement>(null);
-  const dragData = useRef<{ startY: number; mids: number[]; heights: number[]; from: number; gap: number } | null>(null);
+  const dragData = useRef<{ startY: number; mids: number[]; heights: number[]; from: number; to: number; gap: number } | null>(null);
 
   useEffect(() => {
     if (!undo) return;
@@ -165,6 +165,7 @@ export function QuickTasks({ tasks, templates, today }: { tasks: QuickTask[]; te
       mids: rects.map((r) => r.top + r.height / 2),
       heights: rects.map((r) => r.height),
       from: index,
+      to: index,
       gap: rects.length > 1 ? Math.max(0, rects[1].top - rects[0].bottom) : 0,
     };
     setDrag({ from: index, to: index, dy: 0, shift: dragData.current.heights[index] + dragData.current.gap });
@@ -179,15 +180,17 @@ export function QuickTasks({ tasks, templates, today }: { tasks: QuickTask[]; te
     d.mids.forEach((m, i) => {
       if (i !== d.from && m < center) to++;
     });
+    d.to = to;
     setDrag({ from: d.from, to, dy, shift: d.heights[d.from] + d.gap });
   }
 
   function onDragEnd() {
     const d = dragData.current;
     dragData.current = null;
-    if (!d || !drag) return setDrag(null);
-    const { from, to } = drag;
     setDrag(null);
+    // El destino se lee del ref: el último movimiento puede no haberse renderizado aún al soltar.
+    if (!d) return;
+    const { from, to } = d;
     if (from === to) return;
     const next = moveItem(items, from, to).map((t, i) => ({ ...t, position: i + 1 }));
     setItems(next);

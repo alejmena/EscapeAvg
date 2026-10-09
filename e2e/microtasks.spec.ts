@@ -7,6 +7,15 @@ const snap = async (page: Page, name: string, fullPage = true) => {
   await page.screenshot({ path: `${shots}/${name}.png`, fullPage });
 };
 
+/** Espera a que termine la siguiente Server Action (un POST a la página) disparada por `act`. */
+async function saved(page: Page, act: () => Promise<void>) {
+  const done = page
+    .waitForResponse((r) => r.request().method() === "POST" && r.request().headers()["next-action"] !== undefined, { timeout: 15_000 })
+    .catch(() => null);
+  await act();
+  await done;
+}
+
 test.describe.configure({ mode: "serial" });
 
 let page: Page;
@@ -33,7 +42,7 @@ test("tareas rápidas: Enter crea, un clic completa, se edita, se reordena, se b
   await expect(card.getByTestId("quick-counter")).toHaveText("0 de 5 completadas");
 
   await card.getByRole("checkbox", { name: 'Completar "Tender la cama"' }).click();
-  await card.getByRole("checkbox", { name: 'Completar "Ordenar escritorio"' }).click();
+  await saved(page, () => card.getByRole("checkbox", { name: 'Completar "Ordenar escritorio"' }).click());
   await expect(card.getByTestId("quick-counter")).toHaveText("2 de 5 completadas");
   await snap(page, "1-inicio-tareas-rapidas", false);
 
@@ -52,31 +61,31 @@ test("tareas rápidas: Enter crea, un clic completa, se edita, se reordena, se b
   await card.getByText("Leer 10 páginas").click();
   const edit = card.getByLabel("Editar tarea");
   await edit.fill("Leer 20 páginas");
-  await edit.press("Enter");
+  await saved(page, () => edit.press("Enter"));
   await expect(card.getByText("Leer 20 páginas")).toBeVisible();
 
   // Arrastrar la última arriba del todo
   const handle = card.getByRole("button", { name: 'Arrastrar "Repasar vocabulario chino" para cambiar el orden' });
   const first = card.getByRole("button", { name: 'Arrastrar "Tender la cama" para cambiar el orden' });
+  // Las dos asas tienen que estar en pantalla para arrastrar con el ratón.
+  await page.evaluate(() => document.querySelector('[data-testid="quick-tasks"]')?.scrollIntoView({ block: "start" }));
   const hb = (await handle.boundingBox())!;
   const fb = (await first.boundingBox())!;
   await page.mouse.move(hb.x + hb.width / 2, hb.y + hb.height / 2);
   await page.mouse.down();
   await page.mouse.move(hb.x + hb.width / 2, fb.y - 10, { steps: 12 });
-  await page.mouse.up();
+  await saved(page, () => page.mouse.up());
   await expect(card.locator("[data-qt-row]").first()).toContainText("Repasar vocabulario chino");
-  await page.waitForTimeout(800);
   await page.reload();
   await expect(card.locator("[data-qt-row]").first()).toContainText("Repasar vocabulario chino");
 
   // Eliminar y deshacer
-  await card.getByRole("button", { name: 'Eliminar "Limpiar habitación"' }).click();
+  await saved(page, () => card.getByRole("button", { name: 'Eliminar "Limpiar habitación"' }).click());
   const row = card.locator("[data-qt-row]", { hasText: "Limpiar habitación" });
   await expect(row).toHaveCount(0);
   await expect(page.getByRole("status").filter({ hasText: "Eliminada: Limpiar habitación" })).toBeVisible();
-  await page.getByRole("button", { name: "Deshacer" }).click();
+  await saved(page, () => page.getByRole("button", { name: "Deshacer" }).click());
   await expect(row).toHaveCount(1);
-  await page.waitForTimeout(600);
   await page.reload();
   await expect(row).toHaveCount(1);
 });
@@ -90,7 +99,8 @@ test("tareas rápidas: repetir, plantillas de un clic e historial sin sumar tiem
   await expect(dialog).toBeHidden();
 
   await card.getByRole("button", { name: 'Más opciones de "Ordenar escritorio"' }).click();
-  await page.getByRole("dialog").getByRole("button", { name: "Guardar como plantilla de un clic" }).click();
+  await saved(page, () => page.getByRole("dialog").getByRole("button", { name: "Guardar como plantilla de un clic" }).click());
+  await expect(page.getByRole("dialog")).toBeHidden();
   await page.reload();
   await expect(card.getByRole("button", { name: "+ Ordenar escritorio" })).toBeVisible();
   await card.getByRole("button", { name: "+ Ordenar escritorio" }).click();
