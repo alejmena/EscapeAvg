@@ -190,10 +190,25 @@ por quedarse atrás).
 confirmación). Insignia de solicitudes pendientes en la navegación. Si la migración aún no está aplicada, la app sigue
 funcionando y `/social` muestra un aviso.
 
-### Fase 5 — IA
-`lib/domain/recommendations.ts` define la interfaz `Recommendation`. El motor de reglas actual es un
-`RecommendationProvider`; un proveedor basado en LLM implementará la misma interfaz usando resúmenes de
-`activity_events`, con caché en una tabla `insights`.
+### Fase 5 — Planificación inteligente (primera parte implementada, sin IA externa)
+Sin cambios de esquema. `lib/domain/planner.ts` define `PlannerProvider` con dos operaciones y un proveedor por reglas
+(`ruleBasedPlanner`), transparente y sin coste:
+
+- **Plan del día** (`planDay`): calcula tu ritmo realista (mediana de minutos de concentración de tus días activos de
+  las últimas 4 semanas, mezclada con la de ese día de la semana; 1 h si aún no hay historial), corrige las estimaciones
+  con tu precisión histórica (real / estimado), puntúa cada tarea por vencimiento, prioridad, si ya la empezaste y
+  cuántas veces la pospusiste (con el motivo visible), y llena el día sin pasarse de tu ritmo. Lo urgente que no cabe
+  se muestra aparte con "Mover a mañana". Si la primera tarea se ha pospuesto o es larga, propone un Just Start de
+  2 min. Consejos: mejor franja horaria, sobreestimación, poco historial. Hábitos pendientes de hoy.
+- **Resumen semanal** (`weeklyReview`): semana pasada o en curso frente a la anterior, con lo que salió bien
+  (constancia, concentración, mejor día, categoría, objetivos, XP), qué mejorar (caídas, interrupciones, hábitos,
+  objetivos no cumplidos, tareas pospuestas) y metas alcanzables para la siguiente semana (+1 día activo, +10 %).
+
+Pantalla `/plan` y acceso desde Inicio ("Tu plan de hoy"). Consultas en `lib/data/planner.ts`.
+
+**Siguiente paso (IA):** un proveedor basado en un modelo de lenguaje implementará `PlannerProvider` (y
+`RecommendationProvider`) recibiendo exactamente los mismos datos agregados; se activará solo si existe una clave de API en
+el entorno y, si falla, se usará el proveedor por reglas. Las pantallas no cambian.
 
 ### PWA / móvil
 `manifest.webmanifest` incluido. Fase posterior: service worker para modo offline y notificaciones del temporizador.
