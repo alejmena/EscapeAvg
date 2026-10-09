@@ -4,8 +4,10 @@ import { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/cn";
 
-export function Modal({ open, onClose, title, children, className }: {
+export function Modal({ open, onClose, title, children, className, sheet = false }: {
   open: boolean;
+  /** En móvil se abre como hoja desde abajo (en pantallas grandes, centrado). */
+  sheet?: boolean;
   onClose: () => void;
   title: string;
   children: React.ReactNode;
@@ -26,7 +28,10 @@ export function Modal({ open, onClose, title, children, className }: {
         if (e.target === ref.current) onClose();
       }}
       className={cn(
-        "m-auto w-[calc(100%-2rem)] max-w-lg rounded-2xl border border-border bg-surface p-0 text-text shadow-2xl backdrop:bg-black/50 backdrop:backdrop-blur-sm",
+        "border border-border bg-surface p-0 text-text shadow-2xl backdrop:bg-black/50 backdrop:backdrop-blur-sm",
+        sheet
+          ? "mx-auto mb-0 mt-auto max-h-[85dvh] w-full max-w-none rounded-t-2xl sm:m-auto sm:w-[calc(100%-2rem)] sm:max-w-lg sm:rounded-2xl"
+          : "m-auto w-[calc(100%-2rem)] max-w-lg rounded-2xl",
         className,
       )}
     >

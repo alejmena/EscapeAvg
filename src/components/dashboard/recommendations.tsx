@@ -11,18 +11,20 @@ export function RecommendationList({ items, limit }: { items: Recommendation[]; 
   return (
     <ul className="space-y-3">
       {shown.map((r) => (
-        <li key={r.id} className="rounded-xl bg-surface-2 p-3">
-          <p className="flex items-start gap-2 text-sm font-medium">
-            <Lightbulb size={15} className="mt-0.5 shrink-0 text-warning" />
-            {r.title}
-          </p>
-          <p className="mt-1 text-sm text-muted">{r.body}</p>
-          <p className="mt-1 text-xs text-muted/80">Dato: {r.evidence}</p>
-          {r.action && (
-            <Link href={r.action.href} className={buttonClass("secondary", "sm", "mt-2")}>
-              {r.action.label}
-            </Link>
-          )}
+        <li key={r.id} className="flex gap-3 rounded-xl border border-border bg-surface-2/60 p-3">
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-warning-soft text-warning">
+            <Lightbulb size={16} />
+          </span>
+          <div className="min-w-0">
+            <p className="text-sm font-medium">{r.title}</p>
+            <p className="mt-0.5 text-sm text-muted">{r.body}</p>
+            <p className="mt-1 text-xs text-muted/80">Dato: {r.evidence}</p>
+            {r.action && (
+              <Link href={r.action.href} className={buttonClass("secondary", "sm", "mt-2")}>
+                {r.action.label}
+              </Link>
+            )}
+          </div>
         </li>
       ))}
     </ul>

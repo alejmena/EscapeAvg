@@ -186,6 +186,14 @@ test("móvil y modo oscuro", async () => {
   await expect(page.getByRole("navigation", { name: "Navegación móvil" })).toBeVisible();
   await expect(page.getByText("Racha de constancia")).toBeVisible();
   await snap(page, "10-mobile-dark-dashboard");
+  // Todas las secciones accesibles desde el menú "Más".
+  await page.getByRole("button", { name: "Más" }).click();
+  const sheet = page.getByRole("dialog");
+  await expect(sheet.getByRole("link", { name: /Social/ })).toBeVisible();
+  await sheet.getByRole("link", { name: /Hábitos/ }).click();
+  await expect(page).toHaveURL(/\/habits/);
+  await expect(sheet).toBeHidden();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
   await page.goto("/focus");
   await expect(page.getByText("Just Start").first()).toBeVisible();
   await snap(page, "11-mobile-dark-focus");

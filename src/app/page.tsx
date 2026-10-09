@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { BarChart3, Flame, Play, StickyNote, Target, Timer } from "lucide-react";
+import { BarChart3, CalendarClock, Flame, Lock, Play, StickyNote, Target, Timer, Trophy, Users } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { buttonClass } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -25,6 +25,9 @@ export default async function Home() {
     { icon: <BarChart3 size={18} />, title: "Datos, no sensaciones", text: "Estadísticas calculadas solo con lo que registras." },
     { icon: <Target size={18} />, title: "Objetivos medibles", text: "Metas semanales que se actualizan solas." },
     { icon: <StickyNote size={18} />, title: "Tablero libre", text: "Notas adhesivas que se convierten en tareas." },
+    { icon: <CalendarClock size={18} />, title: "Plan del día", text: "Un plan realista según tu ritmo real, con el porqué de cada tarea." },
+    { icon: <Trophy size={18} />, title: "Progreso que motiva", text: "Niveles, XP y logros que premian la constancia, no el volumen." },
+    { icon: <Users size={18} />, title: "Comparación justa", text: "Compárate solo con quien tú elijas y solo si ambos queréis." },
   ];
 
   return (
@@ -39,7 +42,11 @@ export default async function Home() {
         </div>
       </header>
 
-      <section className="py-20 text-center sm:py-28 animate-in">
+      <section className="relative py-20 text-center sm:py-28 animate-in">
+        <div
+          className="pointer-events-none absolute inset-x-0 top-10 -z-10 mx-auto h-72 max-w-2xl rounded-full bg-accent/20 blur-3xl dark:bg-accent/15"
+          aria-hidden
+        />
         <p className="mb-4 inline-block rounded-full border border-border px-3 py-1 text-xs text-muted">Escape the Average</p>
         <h1 className="mx-auto max-w-3xl text-4xl font-semibold tracking-tight sm:text-6xl">
           Convierte intenciones <br className="hidden sm:block" />
@@ -49,7 +56,7 @@ export default async function Home() {
           Tareas, concentración, hábitos y estadísticas reales en un solo lugar. Diseñado para quienes posponen, se distraen o
           no saben por dónde empezar.
         </p>
-        <div className="mt-8 flex justify-center gap-3">
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Link href="/signup" className={buttonClass("primary", "lg")}>
             Empezar gratis
           </Link>
@@ -57,11 +64,14 @@ export default async function Home() {
             Ya tengo cuenta
           </Link>
         </div>
+        <p className="mt-6 flex items-center justify-center gap-1.5 text-xs text-muted">
+          <Lock size={12} /> Tus datos son privados por defecto. Sin anuncios.
+        </p>
       </section>
 
       <section className="grid gap-3 pb-24 sm:grid-cols-2 lg:grid-cols-3">
         {features.map((f) => (
-          <div key={f.title} className="rounded-2xl border border-border bg-surface p-5">
+          <div key={f.title} className="rounded-2xl border border-border bg-surface p-5 transition-colors hover:border-accent/40">
             <div className="mb-3 inline-grid h-9 w-9 place-items-center rounded-xl bg-accent-soft text-accent">{f.icon}</div>
             <h2 className="font-medium">{f.title}</h2>
             <p className="mt-1 text-sm text-muted">{f.text}</p>

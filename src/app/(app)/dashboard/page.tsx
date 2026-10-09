@@ -111,41 +111,47 @@ export default async function DashboardPage() {
         </div>
       </section>
 
-      <Link
-        href="/progress"
-        className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-border bg-surface px-4 py-3 transition-colors hover:bg-surface-2"
-        aria-label={`Nivel ${level.level}, ${level.title}. Ver progreso`}
-      >
-        <span className="flex items-center gap-2 text-sm font-semibold">
-          <span className="grid h-8 w-8 place-items-center rounded-lg bg-accent-soft text-accent tabular">{level.level}</span>
-          {level.title}
-        </span>
-        <span className="min-w-[140px] flex-1">
-          <ProgressBar value={level.ratio} label={`Progreso hacia el nivel ${level.level + 1}`} />
-        </span>
-        <span className="text-xs text-muted tabular">
-          {level.into}/{level.needed} XP{todayXp > 0 ? ` · +${todayXp} hoy` : ""}
-        </span>
-        {newAchievements.length > 0 && (
-          <span className="flex items-center gap-1 rounded-lg bg-warning-soft px-2 py-1 text-xs font-medium text-warning">
-            <Trophy size={13} /> {newAchievements.length === 1 ? `Logro nuevo: ${newAchievements[0].title}` : `${newAchievements.length} logros nuevos`}
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+        <Link
+          href="/progress"
+          className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-border bg-surface px-4 py-3 transition-colors hover:border-accent/40 hover:bg-surface-2"
+          aria-label={`Nivel ${level.level}, ${level.title}. Ver progreso`}
+        >
+          <span className="flex items-center gap-2 text-sm font-semibold">
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-accent-soft text-accent tabular">{level.level}</span>
+            {level.title}
           </span>
-        )}
-      </Link>
+          <span className="min-w-[140px] flex-1">
+            <ProgressBar value={level.ratio} label={`Progreso hacia el nivel ${level.level + 1}`} />
+          </span>
+          <span className="text-xs text-muted tabular">
+            {level.into}/{level.needed} XP{todayXp > 0 ? ` · +${todayXp} hoy` : ""}
+          </span>
+          {newAchievements.length > 0 && (
+            <span className="flex items-center gap-1 rounded-lg bg-warning-soft px-2 py-1 text-xs font-medium text-warning">
+              <Trophy size={13} /> {newAchievements.length === 1 ? `Logro nuevo: ${newAchievements[0].title}` : `${newAchievements.length} logros nuevos`}
+            </span>
+          )}
+        </Link>
 
-      <Link
-        href="/plan"
-        className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-2xl border border-border bg-surface px-4 py-3 text-sm transition-colors hover:bg-surface-2"
-      >
-        <CalendarClock size={16} className="text-accent" />
-        <span className="font-medium">Tu plan de hoy</span>
-        <span className="min-w-0 flex-1 truncate text-muted">
-          {nextUp
-            ? `Empieza por "${nextUp.task.title}" · ${plan.items.length} ${plan.items.length === 1 ? "tarea" : "tareas"}, ≈ ${formatDuration(plan.plannedMinutes * 60)}`
-            : plan.headline}
-        </span>
-        <ArrowRight size={14} className="text-muted" />
-      </Link>
+        <Link
+          href="/plan"
+          className="group order-first flex min-w-0 items-center gap-3 rounded-2xl border border-accent/30 bg-accent-soft/60 px-4 py-3 text-sm transition-colors hover:border-accent/60 hover:bg-accent-soft"
+        >
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-accent text-accent-fg">
+            <CalendarClock size={16} />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-medium">Tu plan de hoy</span>
+            <span className="block truncate text-xs text-muted">
+              {nextUp
+                ? `Empieza por "${nextUp.task.title}" · ${plan.items.length} ${plan.items.length === 1 ? "tarea" : "tareas"}, ≈ ${formatDuration(plan.plannedMinutes * 60)}`
+                : plan.headline}
+            </span>
+          </span>
+          <ArrowRight size={16} className="shrink-0 text-accent transition-transform group-hover:translate-x-0.5" />
+        </Link>
+      </div>
 
       <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Card className="p-4">
@@ -309,15 +315,16 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      <Card>
-        <CardTitle action={<Link href="/stats/trends" className="text-xs text-accent hover:underline">Ver tendencias</Link>}>Tu constancia</CardTitle>
-        <CalendarHeatmap days={daily} from={heatFrom} to={today} weekStartsOn={profile.week_starts_on} metrics={["active"]} compact />
-      </Card>
-
-      <Card>
-        <CardTitle>Sugerencias basadas en tus datos</CardTitle>
-        <RecommendationList items={recs} limit={3} />
-      </Card>
+      <div className="grid gap-6 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
+          <CardTitle>Sugerencias basadas en tus datos</CardTitle>
+          <RecommendationList items={recs} limit={3} />
+        </Card>
+        <Card>
+          <CardTitle action={<Link href="/stats/trends" className="text-xs text-accent hover:underline">Ver tendencias</Link>}>Tu constancia</CardTitle>
+          <CalendarHeatmap days={daily} from={heatFrom} to={today} weekStartsOn={profile.week_starts_on} metrics={["active"]} compact />
+        </Card>
+      </div>
     </div>
   );
 }

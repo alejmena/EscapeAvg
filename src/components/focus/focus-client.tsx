@@ -409,9 +409,7 @@ export function FocusClient({
             )}
           </Card>
         )}
-      </div>
 
-      <aside className="space-y-6">
         <Card>
           <CardTitle>Registrar tiempo manual</CardTitle>
           <p className="mb-3 text-xs text-muted">¿Trabajaste sin temporizador? Añádelo para que tus estadísticas sean reales.</p>
@@ -428,6 +426,9 @@ export function FocusClient({
             </Button>
           </form>
         </Card>
+      </div>
+
+      <aside className="lg:sticky lg:top-8 lg:self-start">
         <HistoryCard history={history} timezone={timezone} />
       </aside>
     </div>
@@ -448,10 +449,10 @@ function HistoryCard({ history, timezone }: { history: HistoryItem[]; timezone: 
       {history.length === 0 ? (
         <EmptyState title="Sin sesiones todavía">Tu primera sesión aparecerá aquí.</EmptyState>
       ) : (
-        <div className="space-y-4">
+        <div className="-mr-2 space-y-4 pr-2 lg:max-h-[calc(100dvh-10rem)] lg:overflow-y-auto">
           {[...groups].map(([day, items]) => (
             <div key={day}>
-              <p className="mb-1 text-xs font-medium text-muted">
+              <p className="sticky top-0 z-10 mb-1 bg-surface py-0.5 text-xs font-medium text-muted">
                 {formatLongDate(day)} · {formatDuration(items.filter((i) => i.status === "completed" && i.kind !== "break").reduce((a, i) => a + (i.focus_seconds ?? 0), 0))}
               </p>
               <ul className="space-y-1">
@@ -470,7 +471,7 @@ function HistoryCard({ history, timezone }: { history: HistoryItem[]; timezone: 
                       <button
                         type="button"
                         onClick={() => confirm("¿Eliminar esta sesión del historial?") && run(() => deleteSession(h.id))}
-                        className="rounded p-1 text-muted opacity-0 hover:text-danger group-hover:opacity-100 focus:opacity-100"
+                        className="rounded p-1 text-muted hover:text-danger [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:focus:opacity-100"
                         aria-label="Eliminar sesión"
                       >
                         <Trash2 size={13} />
