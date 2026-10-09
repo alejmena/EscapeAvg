@@ -126,6 +126,49 @@ export const goalInput = z
     path: ["end_date"],
   });
 
+export const socialProfileInput = z
+  .object({
+    username: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .regex(/^[a-z0-9_]{3,24}$/, "De 3 a 24 caracteres: letras sin acentos, números o _")
+      .nullable(),
+    share_stats: z.boolean(),
+  })
+  .strict();
+
+export const usernameInput = z.string().trim().toLowerCase().min(1, "Escribe un nombre de usuario").max(24, "Máximo 24 caracteres");
+
+export const groupInput = z
+  .object({
+    name: trimmed(60),
+    description: optionalText(300),
+  })
+  .strict();
+
+export const inviteCodeInput = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .regex(/^[a-z0-9]{6,32}$/, "Código no válido");
+
+export const sharedChallengeInput = z
+  .object({
+    group_id: uuid,
+    title: trimmed(80),
+    metric: z.enum(["focus_minutes", "tasks_completed", "habit_completions", "active_days"]),
+    target_value: z.number().int().min(1, "La meta debe ser al menos 1").max(100000),
+    start_date: isoDate,
+    end_date: isoDate,
+  })
+  .strict()
+  .refine((v) => v.end_date >= v.start_date, { message: "La fecha final debe ser posterior", path: ["end_date"] })
+  .refine((v) => (Date.parse(v.end_date) - Date.parse(v.start_date)) / 86400000 <= 92, {
+    message: "Máximo 3 meses",
+    path: ["end_date"],
+  });
+
 export const noteColors = ["yellow", "pink", "blue", "green", "purple", "orange", "gray"] as const;
 
 export const notePatch = z

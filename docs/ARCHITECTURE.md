@@ -72,7 +72,7 @@ Es la columna vertebral para las fases siguientes. Los triggers registran `task.
 - **Fase 2 (análisis):** mapas de calor y "mejores horarios" sin tocar las tablas de origen.
 - **Fase 3 (gamificación):** XP y logros se calculan *a partir de eventos verificados* (sesiones con tiempo real,
   tareas con antigüedad mínima), lo que evita que crear tareas vacías dé puntos.
-- **Fase 4 (social):** el feed y las clasificaciones leen agregados de eventos de usuarios que dieron consentimiento.
+- **Fase 4 (social):** las comparaciones leen agregados de usuarios que dieron consentimiento (recíproco).
 - **Fase 5 (IA):** el historial de eventos es el contexto que se resume para el modelo.
 
 ### Estadísticas
@@ -160,11 +160,35 @@ inflar a mano y, si el usuario borra una sesión o reabre una tarea, el XP se aj
 Lógica pura y testeada en `lib/domain/gamification.ts`; consultas paginadas en `lib/data/gamification.ts`. Si el
 historial crece mucho, el cálculo puede pasar a una tabla `xp_ledger` materializada sin cambiar la interfaz.
 
-### Fase 4 — Social
-Tablas nuevas: `friendships` (solicitud/aceptación), `groups`, `group_members`, `shared_challenges`,
-`stat_shares` (qué métrica se comparte con quién). Las clasificaciones leen funciones `security definer`
-que solo exponen agregados de usuarios con `share_stats = true` y relación aceptada. **No se mostrarán percentiles
-("Top 1%") hasta que exista una población mínima verificable**; antes se muestran posiciones dentro del grupo.
+### Fase 4 — Social (implementada)
+Migración `20261010000000_social.sql`: **solo añade** tablas y funciones (idempotente; no toca datos existentes).
+
+| Tabla | Propósito | RLS |
+|---|---|---|
+| `friendships` | Solicitud (`pending`) y amistad (`accepted`), un par único por pareja | Leer/borrar solo si participas; crear y aceptar solo vía RPC |
+| `groups` | Grupos con `invite_code` | Solo miembros leen; solo el dueño edita o borra |
+| `group_members` | Miembros (`owner`/`member`) | Solo miembros leen; unirse solo vía `join_group`; salir uno mismo o expulsar el dueño |
+| `shared_challenges` | Desafíos de grupo: métrica, meta por persona y fechas (≤ 3 meses) | Miembros leen y crean; borra quien lo creó o el dueño |
+
+Funciones `security definer` (con `search_path = ''`, ejecutables solo por `authenticated`): `send_friend_request`
+(por nombre de usuario; si la otra persona ya te la envió, se acepta), `respond_friend_request`, `list_friends`,
+`create_group`, `join_group`, `rotate_group_code`, `group_members_list` y `social_stats`.
+
+**Privacidad.** Los perfiles ajenos nunca se leen directamente: las funciones devuelven solo nombre y usuario.
+`social_stats(ids, from, to)` devuelve únicamente agregados (minutos, tareas, hábitos, días activos y objetivo semanal)
+de quien llama y de personas para las que `can_see_stats` es cierto: **ambas** tienen `share_stats = true` (recíproco)
+y son amigas aceptadas o comparten grupo. Cada persona se calcula en su propia zona horaria.
+
+**Comparaciones justas** (`lib/domain/social.ts`): por defecto se ordena por constancia (días activos, desempate por %
+del objetivo propio); también por % del objetivo semanal de cada uno, mejora frente a su propia semana anterior (solo
+con una base ≥ 30 min), concentración o tareas. Empates comparten posición. **Sin percentiles ni rankings globales**:
+solo posiciones dentro de tus amigos o de un grupo. Los desafíos compartidos fijan una meta por persona (nadie pierde
+por quedarse atrás).
+
+**Pantallas**: `/social` (perfil social y consentimiento, amigos, comparación semanal, grupos), `/social/groups/[id]`
+(comparación del grupo, desafíos, invitación, miembros) y `/social/join/[code]` (enlace de invitación con
+confirmación). Insignia de solicitudes pendientes en la navegación. Si la migración aún no está aplicada, la app sigue
+funcionando y `/social` muestra un aviso.
 
 ### Fase 5 — IA
 `lib/domain/recommendations.ts` define la interfaz `Recommendation`. El motor de reglas actual es un

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, CheckSquare, Flame, LayoutDashboard, LogOut, Settings, StickyNote, Target, Timer, Trophy } from "lucide-react";
+import { BarChart3, CheckSquare, Flame, LayoutDashboard, LogOut, Settings, StickyNote, Target, Timer, Trophy, Users } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ActiveSessionPill } from "@/components/focus/active-session-pill";
@@ -19,11 +19,22 @@ const NAV = [
   { href: "/goals", label: "Objetivos", icon: Target },
   { href: "/stats", label: "Estadísticas", icon: BarChart3 },
   { href: "/progress", label: "Progreso", icon: Trophy },
+  { href: "/social", label: "Social", icon: Users },
 ];
 
 const MOBILE_NAV = ["/dashboard", "/tasks", "/focus", "/habits", "/stats"];
 
-export function AppShell({ children, name, activeSession }: { children: React.ReactNode; name: string; activeSession: FocusSession | null }) {
+export function AppShell({
+  children,
+  name,
+  activeSession,
+  pendingRequests = 0,
+}: {
+  children: React.ReactNode;
+  name: string;
+  activeSession: FocusSession | null;
+  pendingRequests?: number;
+}) {
   const pathname = usePathname();
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
   return (
@@ -45,6 +56,11 @@ export function AppShell({ children, name, activeSession }: { children: React.Re
             >
               <Icon size={18} />
               {label}
+              {href === "/social" && pendingRequests > 0 && (
+                <span className="ml-auto rounded-full bg-accent px-1.5 text-[11px] font-medium text-accent-fg" aria-label={`${pendingRequests} solicitudes de amistad`}>
+                  {pendingRequests}
+                </span>
+              )}
             </Link>
           ))}
         </nav>
@@ -77,6 +93,10 @@ export function AppShell({ children, name, activeSession }: { children: React.Re
             </Link>
             <Link href="/progress" className="rounded-lg p-2 text-muted" aria-label="Progreso">
               <Trophy size={18} />
+            </Link>
+            <Link href="/social" className="relative rounded-lg p-2 text-muted" aria-label="Social">
+              <Users size={18} />
+              {pendingRequests > 0 && <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-accent" aria-hidden />}
             </Link>
             <Link href="/goals" className="rounded-lg p-2 text-muted" aria-label="Objetivos">
               <Target size={18} />
