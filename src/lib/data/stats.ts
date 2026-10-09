@@ -1,12 +1,15 @@
 import "server-only";
 import type { ServerSupabase } from "@/lib/supabase/server";
-import { addDays, type ISODate } from "@/lib/domain/dates";
+import { addDays, type ISODate, zonedDayStart } from "@/lib/domain/dates";
 import { consistencyStreak } from "@/lib/domain/streaks";
 import type { DailyStat } from "@/lib/domain/stats";
 import { goalProgress, goalRange, type GoalProgress } from "@/lib/domain/goals";
 import { compliance, complianceTrend } from "@/lib/domain/habits";
 import { ruleBasedProvider, type Recommendation } from "@/lib/domain/recommendations";
 import type { Goal, Habit, HabitLog } from "@/lib/types";
+import { bestWeekday, consistencyTrend, projectStats, stalledProjects } from "@/lib/domain/analytics";
+import { formatShortDate } from "@/lib/format";
+import { getAccountStart, getProjectData, getRestDays, getSessionPoints } from "@/lib/data/analytics";
 
 export type CategoryStat = { category_id: string | null; name: string; color: string; focus_seconds: number; tasks_completed: number };
 export type HourlyStat = { hour: number; focus_seconds: number; focus_sessions: number };
@@ -107,18 +110,25 @@ export async function getGoalsWithProgress(supabase: ServerSupabase, today: ISOD
 }
 
 /** Reúne datos reales de los últimos días y aplica el motor de recomendaciones. */
-export async function getRecommendations(supabase: ServerSupabase, today: ISODate): Promise<Recommendation[]> {
+export async function getRecommendations(supabase: ServerSupabase, today: ISODate, tz = "UTC", weekStartsOn = 1): Promise<Recommendation[]> {
   const from14 = addDays(today, -13);
-  const [postponed, estimated, hourly, habitsRes, logsRes, sessions, overdue, daily] = await Promise.all([
+  const from90 = addDays(today, -89);
+  const [postponed, estimated, hourly, habitsRes, logsRes, sessions, overdue, daily90, restDays, projectData, projectSessions, accountStart] = await Promise.all([
     supabase.from("tasks").select("id, title, postponed_count").neq("status", "done").gte("postponed_count", 2).order("postponed_count", { ascending: false }).limit(5),
     supabase.from("tasks").select("estimated_minutes, actual_seconds").eq("status", "done").not("estimated_minutes", "is", null).gt("actual_seconds", 59).order("completed_at", { ascending: false }).limit(50),
     getHourly(supabase, addDays(today, -59), today),
     supabase.from("habits").select("*").is("archived_at", null),
     supabase.from("habit_logs").select("habit_id, log_date, status").gte("log_date", addDays(today, -60)),
-    supabase.from("focus_sessions").select("status, focus_seconds").in("status", ["completed", "abandoned"]).neq("kind", "break").gte("started_at", `${from14}T00:00:00Z`),
+    supabase.from("focus_sessions").select("status, focus_seconds").in("status", ["completed", "abandoned"]).neq("kind", "break").gte("started_at", zonedDayStart(from14, tz)),
     supabase.from("tasks").select("id", { count: "exact", head: true }).neq("status", "done").neq("status", "archived").lt("due_date", today).is("parent_id", null),
-    getDaily(supabase, from14, today),
+    getDaily(supabase, from90, today),
+    getRestDays(supabase, from90),
+    getProjectData(supabase),
+    getSessionPoints(supabase, addDays(today, -27), today, tz),
+    getAccountStart(supabase, tz),
   ]);
+  const daily = daily90.filter((d) => d.day >= from14);
+  const projStats = projectStats(projectData.projects, projectData.tasks, projectSessions, today, tz, weekStartsOn);
   const logs = (logsRes.data ?? []) as Pick<HabitLog, "habit_id" | "log_date" | "status">[];
   const habitTrends = ((habitsRes.data ?? []) as Habit[]).map((h) => ({
     id: h.id,
@@ -142,6 +152,12 @@ export async function getRecommendations(supabase: ServerSupabase, today: ISODat
     interruptionsLast14: totalsDaily.i,
     focusSessionsLast14: totalsDaily.s,
     activeDaysLast14: totalsDaily.active,
+    consistency: consistencyTrend(daily90, today, restDays, accountStart),
+    bestWeekday: bestWeekday(daily90.filter((d) => !accountStart || d.day >= accountStart)),
+    stalledProjects: stalledProjects(projStats, today, tz),
+    behindProjects: projStats
+      .filter((p) => p.status === "active" && p.onTrack === false && p.projectedFinish && p.target_date)
+      .map((p) => ({ id: p.id, name: p.name, projectedFinish: formatShortDate(p.projectedFinish!), target_date: formatShortDate(p.target_date!) })),
   });
 }
 

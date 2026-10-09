@@ -17,7 +17,9 @@ export function BarChart({ bars, height = 140, color = "var(--accent)", classNam
   const max = Math.max(0, ...bars.map((b) => b.value));
   const n = bars.length || 1;
   const gap = n > 40 ? 1 : n > 20 ? 2 : 4;
-  const showEvery = n > 40 ? Math.ceil(n / 10) : n > 16 ? Math.ceil(n / 8) : 1;
+  // Etiquetas largas (p. ej. "28 sept") no caben todas en pantallas estrechas.
+  const longLabels = bars.some((b) => b.label.length > 3);
+  const showEvery = n > 40 ? Math.ceil(n / 10) : n > 16 ? Math.ceil(n / 8) : longLabels && n > 6 ? Math.ceil(n / 6) : 1;
 
   if (max === 0) {
     return (
@@ -28,7 +30,7 @@ export function BarChart({ bars, height = 140, color = "var(--accent)", classNam
   }
 
   return (
-    <div className={cn("relative", className)}>
+    <div className={cn("relative min-w-0", className)}>
       <div className="flex items-end" style={{ height, gap }} role="img" aria-label={bars.map((b) => b.tooltip).join("; ")}>
         {bars.map((b, i) => (
           <div
@@ -52,7 +54,7 @@ export function BarChart({ bars, height = 140, color = "var(--accent)", classNam
       </div>
       <div className="mt-1.5 flex" style={{ gap }}>
         {bars.map((b, i) => (
-          <div key={b.key} className={cn("flex-1 overflow-visible whitespace-nowrap text-center text-[10px] text-muted", b.highlight && "font-semibold text-text")}>
+          <div key={b.key} className={cn("min-w-0 flex-1 overflow-visible whitespace-nowrap text-center text-[10px] text-muted", b.highlight && "font-semibold text-text")}>
             {i % showEvery === 0 ? b.label : ""}
           </div>
         ))}

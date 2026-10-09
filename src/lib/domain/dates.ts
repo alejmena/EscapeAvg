@@ -76,3 +76,50 @@ export function eachDay(from: ISODate, to: ISODate): ISODate[] {
 export function isISODate(s: string): boolean {
   return /^\d{4}-\d{2}-\d{2}$/.test(s) && fromDate(toDate(s)) === s;
 }
+
+export function startOfYear(d: ISODate): ISODate {
+  return `${d.slice(0, 4)}-01-01`;
+}
+
+const partsFormatters = new Map<string, Intl.DateTimeFormat>();
+function partsFormatter(tz: string): Intl.DateTimeFormat {
+  let f = partsFormatters.get(tz);
+  if (!f) {
+    f = new Intl.DateTimeFormat("en-US", {
+      timeZone: tz,
+      hourCycle: "h23",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+    partsFormatters.set(tz, f);
+  }
+  return f;
+}
+
+/** Fecha, día de la semana (0 = domingo) y hora locales de `instant` en `tz`. Reutiliza el formateador. */
+export function zonedParts(instant: Date, tz: string): { date: ISODate; weekday: number; hour: number; minute: number; second: number } {
+  const p: Record<string, string> = {};
+  for (const x of partsFormatter(tz).formatToParts(instant)) p[x.type] = x.value;
+  const date = `${p.year}-${p.month}-${p.day}`;
+  return { date, weekday: weekday(date), hour: Number(p.hour), minute: Number(p.minute), second: Number(p.second) };
+}
+
+function offsetMinutes(instant: Date, tz: string): number {
+  const z = zonedParts(instant, tz);
+  const asUtc = Date.UTC(Number(z.date.slice(0, 4)), Number(z.date.slice(5, 7)) - 1, Number(z.date.slice(8, 10)), z.hour, z.minute, z.second);
+  return Math.round((asUtc - Math.floor(instant.getTime() / 1000) * 1000) / 60_000);
+}
+
+/** Instante (ISO UTC) en que empieza el día local `d` en la zona `tz`. Útil para filtrar timestamps por días locales. */
+export function zonedDayStart(d: ISODate, tz: string): string {
+  const guess = toDate(d).getTime();
+  const first = offsetMinutes(new Date(guess), tz);
+  let t = guess - first * 60_000;
+  const second = offsetMinutes(new Date(t), tz);
+  if (second !== first) t = guess - second * 60_000;
+  return new Date(t).toISOString();
+}

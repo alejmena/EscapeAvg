@@ -1,4 +1,4 @@
-import { addDays, diffDays, endOfMonth, type ISODate, startOfMonth, startOfWeek } from "./dates";
+import { addDays, addMonths, diffDays, endOfMonth, type ISODate, startOfMonth, startOfWeek, startOfYear } from "./dates";
 
 export type DailyStat = {
   day: ISODate;
@@ -47,7 +47,7 @@ export function compare(current: number, previous: number): Comparison {
   return { current, previous, delta, pct, trend };
 }
 
-export type PeriodKind = "day" | "week" | "month";
+export type PeriodKind = "day" | "week" | "month" | "year";
 export type Range = { from: ISODate; to: ISODate };
 
 /**
@@ -65,6 +65,12 @@ export function periodRanges(kind: PeriodKind, today: ISODate, weekStartsOn = 1)
     const elapsed = diffDays(today, from);
     const pFrom = addDays(from, -7);
     return { current: { from, to: today }, previous: { from: pFrom, to: addDays(pFrom, elapsed) } };
+  }
+  if (kind === "year") {
+    const from = startOfYear(today);
+    const pFrom = startOfYear(addMonths(from, -12));
+    // Mismo día del año anterior (29 feb → 28 feb).
+    return { current: { from, to: today }, previous: { from: pFrom, to: addMonths(today, -12) } };
   }
   const from = startOfMonth(today);
   const elapsed = diffDays(today, from);

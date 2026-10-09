@@ -7,7 +7,17 @@ import { estimateAccuracy, formatDuration } from "./stats";
  */
 export type Recommendation = {
   id: string;
-  kind: "procrastination" | "best_time" | "habit_decline" | "estimates" | "small_start" | "interruptions" | "rest";
+  kind:
+    | "procrastination"
+    | "best_time"
+    | "habit_decline"
+    | "estimates"
+    | "small_start"
+    | "interruptions"
+    | "rest"
+    | "consistency"
+    | "best_day"
+    | "project";
   title: string;
   body: string;
   evidence: string;
@@ -26,7 +36,14 @@ export type RecommendationInput = {
   interruptionsLast14: number;
   focusSessionsLast14: number;
   activeDaysLast14: number;
+  /** Fase 2 (opcionales): señales de tendencia calculadas en lib/domain/analytics. */
+  consistency?: { trend: "up" | "down" | "flat"; recentRate: number; previousRate: number } | null;
+  bestWeekday?: { weekday: number; avgFocusSeconds: number; overallAvg: number } | null;
+  stalledProjects?: { id: string; name: string }[];
+  behindProjects?: { id: string; name: string; projectedFinish: string; target_date: string }[];
 };
+
+const WEEKDAY_PLURAL = ["domingos", "lunes", "martes", "miércoles", "jueves", "viernes", "sábados"];
 
 export interface RecommendationProvider {
   recommend(input: RecommendationInput): Promise<Recommendation[]> | Recommendation[];
@@ -147,6 +164,69 @@ export function ruleBasedRecommendations(input: RecommendationInput): Recommenda
       body: "Gran constancia. Descansar también es parte del progreso: puedes marcar un día de descanso sin perder tu racha.",
       evidence: "Actividad registrada los últimos 14 días.",
       priority: 20,
+    });
+  }
+
+  // 8. Constancia en 90 días (comparando las dos mitades).
+  const c = input.consistency;
+  if (c && c.trend === "down" && c.previousRate - c.recentRate >= 0.15) {
+    out.push({
+      id: "consistency-down",
+      kind: "consistency",
+      title: "Tu constancia ha bajado estas semanas",
+      body: "No hace falta recuperar todo de golpe. Elige una sola acción mínima al día (2 minutos cuentan) y deja que la racha vuelva sola.",
+      evidence: `Días activos: ${pct(c.recentRate)} en las últimas 6 semanas frente a ${pct(c.previousRate)} en las 6 anteriores.`,
+      action: { label: "Empezar 2 minutos", href: "/focus?just=2" },
+      priority: 65,
+    });
+  } else if (c && c.trend === "up" && c.recentRate - c.previousRate >= 0.15) {
+    out.push({
+      id: "consistency-up",
+      kind: "consistency",
+      title: "Tu constancia está mejorando",
+      body: "Lo que estás haciendo funciona. Mantén el mismo ritmo antes de subir la exigencia.",
+      evidence: `Días activos: ${pct(c.recentRate)} en las últimas 6 semanas frente a ${pct(c.previousRate)} en las 6 anteriores.`,
+      action: { label: "Ver tendencias", href: "/stats/trends" },
+      priority: 25,
+    });
+  }
+
+  // 9. Mejor día de la semana.
+  if (input.bestWeekday) {
+    const b = input.bestWeekday;
+    out.push({
+      id: "best-day",
+      kind: "best_day",
+      title: `Los ${WEEKDAY_PLURAL[b.weekday]} son tu día más productivo`,
+      body: "Planifica para ese día las tareas que más energía exigen y deja las ligeras para el resto.",
+      evidence: `${formatDuration(b.avgFocusSeconds)} de concentración media ese día frente a ${formatDuration(b.overallAvg)} de media general.`,
+      action: { label: "Ver horarios", href: "/stats/patterns" },
+      priority: 35,
+    });
+  }
+
+  // 10. Proyectos que no llegan a su fecha o están parados.
+  for (const p of (input.behindProjects ?? []).slice(0, 1)) {
+    out.push({
+      id: `project-behind-${p.id}`,
+      kind: "project",
+      title: `"${p.name}" va más lento que su fecha objetivo`,
+      body: "Revisa qué queda pendiente: dividir las tareas grandes o mover la fecha a algo realista es mejor que cargar con la presión.",
+      evidence: `Al ritmo de las últimas 4 semanas terminaría hacia el ${p.projectedFinish}; la fecha objetivo es el ${p.target_date}.`,
+      action: { label: "Ver proyectos", href: "/stats/projects" },
+      priority: 75,
+    });
+  }
+  const stalled = input.stalledProjects ?? [];
+  if (stalled.length) {
+    out.push({
+      id: `project-stalled-${stalled[0].id}`,
+      kind: "project",
+      title: `"${stalled[0].name}" lleva 14 días sin avances`,
+      body: "Retomar un proyecto parado cuesta menos con una sesión corta: abre la siguiente tarea y dale 5 minutos.",
+      evidence: `Sin sesiones ni tareas completadas en 14 días.${stalled.length > 1 ? ` Otros ${stalled.length - 1} proyectos activos están en la misma situación.` : ""}`,
+      action: { label: "Ver tareas", href: "/tasks?view=all" },
+      priority: 55,
     });
   }
 

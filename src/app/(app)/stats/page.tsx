@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { CalendarCheck, CheckCircle2, Clock, Flame, Gauge, Timer, Zap } from "lucide-react";
 import { requireUser } from "@/lib/auth";
-import { addDays, addMonths, diffDays, isISODate, startOfMonth, type ISODate } from "@/lib/domain/dates";
+import { addDays, addMonths, diffDays, isISODate, startOfMonth, type ISODate, zonedDayStart } from "@/lib/domain/dates";
 import { compare, describeChange, estimateAccuracy, formatDuration, periodRanges, previousRange, totals, type Comparison, type DailyStat } from "@/lib/domain/stats";
 import { formatShortDate } from "@/lib/format";
 import { getByCategory, getDaily, getHabitCompliance, getHourly, getRecommendations } from "@/lib/data/stats";
@@ -16,9 +16,9 @@ export const metadata: Metadata = { title: "Estadísticas" };
 type Range = { from: ISODate; to: ISODate };
 
 function resolveRange(kind: string, today: ISODate, weekStartsOn: number, from?: string, to?: string) {
-  if (kind === "day" || kind === "week" || kind === "month") {
-    const r = periodRanges(kind, today, weekStartsOn);
-    const label = { day: "ayer", week: "los mismos días de la semana anterior", month: "los mismos días del mes anterior" }[kind];
+  if (kind === "day" || kind === "week" || kind === "month" || kind === "ytd") {
+    const r = periodRanges(kind === "ytd" ? "year" : kind, today, weekStartsOn);
+    const label = { day: "ayer", week: "los mismos días de la semana anterior", month: "los mismos días del mes anterior", ytd: "los mismos días del año anterior" }[kind];
     return { ...r, label };
   }
   let current: Range;
@@ -80,9 +80,9 @@ export default async function StatsPage({ searchParams }: { searchParams: Promis
       .select("estimated_minutes, actual_seconds, completed_at")
       .eq("status", "done")
       .not("estimated_minutes", "is", null)
-      .gte("completed_at", `${current.from}T00:00:00Z`)
-      .lte("completed_at", `${addDays(current.to, 1)}T00:00:00Z`),
-    getRecommendations(supabase, today),
+      .gte("completed_at", zonedDayStart(current.from, profile.timezone))
+      .lt("completed_at", zonedDayStart(addDays(current.to, 1), profile.timezone)),
+    getRecommendations(supabase, today, profile.timezone, profile.week_starts_on),
   ]);
 
   const t = totals(days);
@@ -99,13 +99,10 @@ export default async function StatsPage({ searchParams }: { searchParams: Promis
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Estadísticas</h1>
-          <p className="mt-1 text-sm text-muted">
-            {formatShortDate(current.from)}
-            {current.from !== current.to && ` – ${formatShortDate(current.to)}`} · comparado con {label}
-          </p>
-        </div>
+        <p className="text-sm text-muted">
+          {formatShortDate(current.from)}
+          {current.from !== current.to && ` – ${formatShortDate(current.to)}`} · comparado con {label}
+        </p>
         <RangePicker current={kind} from={current.from} to={current.to} />
       </div>
 
@@ -242,7 +239,10 @@ export default async function StatsPage({ searchParams }: { searchParams: Promis
       </Card>
 
       <p className="text-xs text-muted">
-        Todas las cifras se calculan a partir de lo que registras (sesiones, tareas y hábitos). Pasar más horas no siempre significa ser más productivo:
+        <a href={`/stats/export?from=${current.from}&to=${current.to}`} className="font-medium text-accent hover:underline" download>
+          Descargar estos datos (CSV)
+        </a>{" "}
+        · Todas las cifras se calculan a partir de lo que registras (sesiones, tareas y hábitos). Pasar más horas no siempre significa ser más productivo:
         mira también la constancia, el cumplimiento y la precisión de tus estimaciones. Sin datos en el período anterior no se muestra porcentaje.
       </p>
     </div>

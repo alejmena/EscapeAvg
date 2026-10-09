@@ -9,19 +9,20 @@ Arquitectura, modelo de datos y plan por fases: [`docs/ARCHITECTURE.md`](docs/AR
 
 Next.js 16 (App Router, Server Actions) · React 19 · TypeScript · Tailwind CSS 4 · Supabase (Postgres, Auth, RLS) · Zod · Vitest · Playwright.
 
-## Fase 1 (MVP) — qué incluye
+## Qué incluye (Fases 1 y 2)
 
 | Área | Funciona |
 |---|---|
 | Cuenta | Registro, inicio y cierre de sesión (Supabase Auth, contraseñas con hash). Rutas privadas protegidas. Datos privados por usuario con RLS. |
-| Dashboard | Resumen del día, comparación con ayer y con los mismos días de la semana anterior, objetivo semanal, racha de constancia (con "día de descanso"), tareas de hoy, hábitos de hoy, objetivos activos, sugerencias, botón **Empezar a concentrarme** y **Just Start**. |
+| Dashboard | Resumen del día, comparación con ayer y con los mismos días de la semana anterior, objetivo semanal, racha de constancia (con "día de descanso"), calendario de constancia de 16 semanas, tareas de hoy, hábitos de hoy, objetivos activos, sugerencias, botón **Empezar a concentrarme** y **Just Start**. |
 | Tareas | Crear, editar, eliminar, completar. Prioridad, fecha, categoría, proyecto, notas, subtareas (pasos), recurrentes (diaria/semanal con días/mensual), estimación vs. tiempo real, contadores ("15 de 30 ejercicios"), registro manual de tiempo, "dividir en pasos". Vistas Hoy / Próximas / Todas / Completadas. |
 | Concentración | Pomodoro configurable, cronómetro, pausa/continuar/finalizar/descartar, descansos corto y largo, sesión asociada a tarea, registro de interrupciones (internas/externas), modo sin distracciones, historial. **Just Start** de 2 o 5 min con opción de seguir. El tiempo lo calcula la base de datos y se sincroniza entre dispositivos. |
 | Hábitos | Diario, días concretos o X veces por semana; objetivo y unidad; historial y calendario; % de cumplimiento; rachas opcionales; descansos justificados que no rompen la racha. |
 | Notas adhesivas | Varios tableros; crear, escribir, arrastrar (ratón, táctil o teclado), redimensionar, colores, grupos por tema, "Agrupar" en columnas, convertir en tarea (las listas se convierten en pasos). Autoguardado. |
 | Objetivos | Semanales, mensuales o por fechas; minutos de concentración, tareas, hábitos o manual; por categoría; progreso calculado con datos reales. |
 | Estadísticas | Hoy, semana, mes, 30/90 días, 12 meses o rango; comparación con el período anterior equivalente; concentración y tareas por día/semana/mes; por categoría; horas del día; mejores días; días activos; cumplimiento de fechas y hábitos; estimado vs. real; interrupciones. |
-| Recomendaciones | Motor de reglas con evidencia visible: tareas pospuestas, dificultad para empezar, hábitos en caída, precisión de estimaciones, mejor franja horaria, interrupciones. Interfaz preparada para un proveedor de IA. |
+| Análisis avanzado (Fase 2) | Comparativas semana/mes/año con el mismo tramo anterior, calendario de actividad (mapa de calor), últimas 12 semanas y 12 meses, tendencia de 90 días, récords personales, mapa de calor día × hora por categoría, mejor día y franja, sesiones terminadas por franja, estimado vs. real por categoría, estadísticas por proyecto con proyección de fin, exportación CSV. |
+| Recomendaciones | Motor de reglas con evidencia visible: tareas pospuestas, dificultad para empezar, hábitos en caída, precisión de estimaciones, mejor franja horaria, interrupciones, constancia de 90 días, mejor día de la semana, proyectos retrasados o parados. Interfaz preparada para un proveedor de IA. |
 | UX | Modo claro/oscuro/sistema, responsive con navegación inferior en móvil, PWA instalable (manifest), accesibilidad básica (roles ARIA, foco visible, movimiento reducido). |
 
 ## Puesta en marcha
@@ -39,7 +40,7 @@ Sin variables de entorno, la app muestra `/setup` con estas instrucciones.
 
 | Comando | Qué prueba |
 |---|---|
-| `npm test` | Lógica de dominio (fechas, recurrencia, rachas, hábitos, estadísticas, temporizador, objetivos, Just Start, recomendaciones). |
+| `npm test` | Lógica de dominio (fechas y zonas horarias, recurrencia, rachas, hábitos, estadísticas, análisis avanzado, temporizador, objetivos, Just Start, recomendaciones). |
 | `npm run test:db` | Migraciones, RLS, triggers y funciones SQL contra un Postgres real. Requiere `TEST_DATABASE_URL` (un Postgres vacío; **la base se reinicia**). |
 | `npm run test:e2e` | Flujo completo en el navegador contra la app en marcha y un Supabase real: registro, tareas, recurrencia, pomodoro, Just Start, hábitos, notas, objetivos, estadísticas, privacidad entre usuarios, móvil/oscuro. |
 | `npm run lint` / `npm run typecheck` | ESLint y TypeScript. |
