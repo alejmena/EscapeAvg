@@ -11,6 +11,8 @@ import { getDaily, getGoalsWithProgress, getRecommendations, getStreak } from "@
 import { getAccountStart } from "@/lib/data/analytics";
 import { getProgress } from "@/lib/data/gamification";
 import { getDayPlan } from "@/lib/data/planner";
+import { getQuickToday, isQuickReady } from "@/lib/data/quick";
+import { QuickTasksCard } from "@/components/microtasks/quick-tasks-card";
 import { CalendarHeatmap } from "@/components/charts/calendar-heatmap";
 import type { Habit, HabitLog, Task } from "@/lib/types";
 import { buttonClass } from "@/components/ui/button";
@@ -77,20 +79,18 @@ export default async function DashboardPage() {
   const heatStart = addDays(weekStart, -7 * 15);
 
   const disciplineFrom = addDays(today, -400);
-  const [daily, streak, goals, recs, tasksRes, habitsRes, logsRes, accountStart, progress, plan, discipline, activeRes] = await Promise.all([
+  const quickReady = await isQuickReady(supabase);
+  const [daily, streak, goals, recs, tasksRes, habitsRes, logsRes, accountStart, progress, plan, discipline, activeRes, quick] = await Promise.all([
     getDaily(supabase, heatStart, today),
     getStreak(supabase, today),
     getGoalsWithProgress(supabase, today, profile.week_starts_on),
     getRecommendations(supabase, today, profile.timezone, profile.week_starts_on),
-    supabase
-      .from("tasks")
-      .select("*")
-      .is("parent_id", null)
-      .in("status", ["todo", "in_progress"])
-      .or(`due_date.lte.${today},status.eq.in_progress`)
-      .order("priority", { ascending: false })
-      .order("due_date")
-      .limit(8),
+    (() => {
+      let q = supabase.from("tasks").select("*").is("parent_id", null).in("status", ["todo", "in_progress"]);
+      // Las tareas rápidas tienen su propia lista arriba.
+      if (quickReady) q = q.eq("quick", false);
+      return q.or(`due_date.lte.${today},status.eq.in_progress`).order("priority", { ascending: false }).order("due_date").limit(8);
+    })(),
     supabase.from("habits").select("*").is("archived_at", null).order("position"),
     supabase.from("habit_logs").select("habit_id, log_date, status").eq("log_date", today),
     getAccountStart(supabase, profile.timezone),
@@ -98,6 +98,7 @@ export default async function DashboardPage() {
     getDayPlan(supabase, profile, today),
     getDiscipline(supabase, profile, disciplineFrom, today),
     supabase.from("focus_sessions").select("*").in("status", ["running", "paused"]).maybeSingle<FocusSession>(),
+    getQuickToday(supabase, profile, today),
   ]);
   const favorites = await getFavoriteQuoteIds(supabase, discipline.ready);
   const summary = summarize({ days: discipline.days, today, weekStart, goalMinutes: discipline.goalMinutes, restDays: discipline.restDays });
@@ -152,6 +153,8 @@ export default async function DashboardPage() {
         dateLabel={formatLongDate(today)}
         hello={`Hola${name ? `, ${name}` : ""}. ${greeting(hour)}`}
       />
+
+      <QuickTasksCard quick={quick} today={today} />
 
       <section className="grid gap-3 md:grid-cols-3" aria-label="Tu progreso frente a ti mismo">
         <div className="card-glass rounded-[24px] p-5" data-testid="yesterday">

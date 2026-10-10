@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/auth";
 import { addDays } from "@/lib/domain/dates";
 import type { Category, Project, Task } from "@/lib/types";
 import { TasksView, type TaskView } from "@/components/tasks/tasks-view";
+import { isQuickReady } from "@/lib/data/quick";
 
 export const metadata: Metadata = { title: "Tareas" };
 
@@ -18,6 +19,8 @@ export default async function TasksPage({
   const { supabase, today, profile } = await requireUser();
 
   let query = supabase.from("tasks").select("*").neq("status", "archived");
+  // Las tareas rápidas se gestionan en el inicio; aquí solo aparecen en "Completadas".
+  if (view !== "done" && (await isQuickReady(supabase))) query = query.eq("quick", false);
   if (view === "done") {
     query = query.eq("status", "done").order("completed_at", { ascending: false }).limit(150);
   } else {

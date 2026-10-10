@@ -1,0 +1,98 @@
+/* Microtareas: animaciones breves al completar y al arrastrar. */
+@keyframes qt-check {
+  0% {
+    transform: scale(0.6);
+  }
+  55% {
+    transform: scale(1.28);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.qt-check-pop {
+  animation: qt-check 460ms var(--ease-spring) both;
+}
+
+.qt-burst {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.qt-burst i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 999px;
+  background: var(--c);
+  transform: rotate(var(--a)) translateY(0) scale(1);
+  animation: qt-burst 700ms var(--ease-out) forwards;
+}
+@keyframes qt-burst {
+  to {
+    transform: rotate(var(--a)) translateY(-24px) scale(0.2);
+    opacity: 0;
+  }
+}
+
+@keyframes qt-flash {
+  0% {
+    background-color: color-mix(in srgb, var(--success) 20%, transparent);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+.qt-row-done {
+  animation: qt-flash 900ms ease-out;
+}
+
+/* Tachado que se dibuja de izquierda a derecha. */
+.qt-strike {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 0 55%;
+  background-size: 100% 1.5px;
+  transition:
+    background-size 380ms var(--ease-out),
+    color 300ms ease;
+}
+.qt-strike[data-done="false"] {
+  background-size: 0% 1.5px;
+}
+
+@keyframes qt-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+}
+.qt-in {
+  animation: qt-in 260ms var(--ease-out) both;
+}
+
+@keyframes qt-toast {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 16px);
+  }
+}
+.qt-toast {
+  animation: qt-toast 260ms var(--ease-spring) both;
+}
+
+@keyframes qt-all-done {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  60% {
+    transform: scale(1.04);
+  }
+}
+.qt-all-done {
+  animation: qt-all-done 520ms var(--ease-spring) both;
+}

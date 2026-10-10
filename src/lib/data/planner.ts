@@ -10,6 +10,7 @@ import type { Habit, HabitLog, Profile } from "@/lib/types";
 import { getByCategory, getDaily, getHabitCompliance } from "./stats";
 import { getRestDays, getSessionPoints } from "./analytics";
 import { getProgress } from "./gamification";
+import { isQuickReady } from "./quick";
 
 /** Proveedor activo. Hoy es el de reglas; un proveedor con IA implementará la misma interfaz. */
 const provider = ruleBasedPlanner;
@@ -18,10 +19,12 @@ const TASK_FIELDS = "*";
 
 export async function getDayPlan(supabase: ServerSupabase, profile: Profile, today: ISODate): Promise<DayPlan> {
   const tz = profile.timezone;
+  const quickReady = await isQuickReady(supabase);
+  let openTasks = supabase.from("tasks").select(TASK_FIELDS);
+  // Las microtareas no se planifican: viven en su lista rápida del inicio.
+  if (quickReady) openTasks = openTasks.eq("quick", false);
   const [tasksRes, estimatedRes, daily, sessions, habitsRes, logsRes] = await Promise.all([
-    supabase
-      .from("tasks")
-      .select(TASK_FIELDS)
+    openTasks
       .is("parent_id", null)
       .in("status", ["todo", "in_progress"])
       .order("priority", { ascending: false })
