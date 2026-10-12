@@ -9,9 +9,15 @@ import { useAction } from "@/components/tasks/use-action";
 export function MoveTaskButton({ id, to, label }: { id: string; to: string; label: string }) {
   const { run, pending, error } = useAction();
   return (
-    <span className="flex items-center gap-2">
-      <Button size="sm" variant="ghost" disabled={pending} onClick={() => run(() => updateTask(id, { due_date: to }))}>
-        <CalendarArrowUp size={14} />
+    <span className="flex shrink-0 items-center gap-2">
+      <Button
+        size="sm"
+        variant="secondary"
+        disabled={pending}
+        className="hover:border-tone/50 hover:text-tone-ink"
+        onClick={() => run(() => updateTask(id, { due_date: to }))}
+      >
+        <CalendarArrowUp size={14} className={pending ? "animate-pulse text-tone" : "text-tone"} />
         {label}
       </Button>
       {error && <span className="text-xs text-danger">{error}</span>}

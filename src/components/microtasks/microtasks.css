@@ -1,4 +1,4 @@
-/* Microtareas: animaciones breves al completar y al arrastrar. */
+/* Microtareas: animaciones breves al completar y al arrastrar (el color sale del tono de la tarjeta). */
 @keyframes qt-check {
   0% {
     transform: scale(0.6);
@@ -29,18 +29,18 @@
   border-radius: 999px;
   background: var(--c);
   transform: rotate(var(--a)) translateY(0) scale(1);
-  animation: qt-burst 700ms var(--ease-out) forwards;
+  animation: qt-burst 720ms var(--ease-out) forwards;
 }
 @keyframes qt-burst {
   to {
-    transform: rotate(var(--a)) translateY(-24px) scale(0.2);
+    transform: rotate(var(--a)) translateY(-28px) scale(0.2);
     opacity: 0;
   }
 }
 
 @keyframes qt-flash {
   0% {
-    background-color: color-mix(in srgb, var(--success) 20%, transparent);
+    background-color: color-mix(in srgb, var(--tone) 22%, transparent);
   }
   100% {
     background-color: transparent;
@@ -50,18 +50,18 @@
   animation: qt-flash 900ms ease-out;
 }
 
-/* Tachado que se dibuja de izquierda a derecha. */
+/* Tachado con el degradado del tono que se dibuja de izquierda a derecha. */
 .qt-strike {
-  background-image: linear-gradient(currentColor, currentColor);
+  background-image: linear-gradient(90deg, var(--tone), var(--tone-2));
   background-repeat: no-repeat;
-  background-position: 0 55%;
-  background-size: 100% 1.5px;
+  background-position: 0 56%;
+  background-size: 100% 2px;
   transition:
-    background-size 380ms var(--ease-out),
+    background-size 420ms var(--ease-out),
     color 300ms ease;
 }
 .qt-strike[data-done="false"] {
-  background-size: 0% 1.5px;
+  background-size: 0% 2px;
 }
 
 @keyframes qt-in {
@@ -95,4 +95,15 @@
 }
 .qt-all-done {
   animation: qt-all-done 520ms var(--ease-spring) both;
+}
+
+/* Celda del mapa de constancia: aparece escalonada. */
+@keyframes qt-cell {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+.qt-cell {
+  animation: qt-cell 420ms var(--ease-spring) both;
 }

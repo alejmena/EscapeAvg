@@ -40,13 +40,22 @@ Superficies: `bg`, `surface`, `surface-2`, `surface-3`; bordes `border`, `border
 | `Card` | `variant`: `glass` (por defecto, con luz al cursor), `tint` (tinte del tono), `feature` (degradado intenso, texto blanco: una por pantalla), `solid`, `outline`. `tone` para cambiar el color. |
 | `CardTitle` | Título de tarjeta con `icon` (en ficha suave del tono), `subtitle` y `action`. |
 | `StatTile` | Cifra clave: `icon`, `label`, `value`, `delta` + `trend` (`up`/`down`/`flat`), `footnote`, `tone`. |
-| `Badge` | `variant`: `neutral`, `tone`, `accent`, `success`, `warning`, `danger`, `solid`; o `color` (hex de categoría). |
+| `Badge` | `variant`: `neutral`, `tone`, `accent`, `success`, `warning`, `danger`, `gold`, `solid`; o `color` (hex de categoría). |
 | `ProgressBar` | Degradado del tono con brillo. `size`: `sm`, `md`, `lg`; `color` opcional. |
 | `ProgressRing` | Anillo con degradado del tono. |
 | `EmptyState` | Estado vacío ilustrado: `icon`, `title`, `children`, `action`. |
-| `Button` / `buttonClass` | `variant`: `primary` (marca, para la acción principal), `tone` (color de la sección), `secondary`, `ghost`, `danger`, `success`. `size`: `sm`, `md`, `lg`, `icon`. |
+| `Button` / `buttonClass` | `variant`: `primary` (marca, para la acción principal), `tone` (color de la sección), `inverse` (blanco, para la acción principal dentro de una tarjeta `feature`), `secondary`, `ghost`, `danger`, `success`. `size`: `sm`, `md`, `lg`, `icon`. |
 | `Input`, `Select`, `Textarea`, `Field`, `Label` | Campos con foco luminoso; el `Select` trae su propia flecha. |
 | `Modal` | Diálogo (y hoja inferior en móvil con `sheet`). |
+| `ThemeToggle`, `useTheme`, `setTheme` | Selector de tema y su estado compartido (`components/theme-toggle.tsx`): cualquier selector de tema debe usarlos. |
+
+Gráficas (`src/components/charts`): `BarChart` usa por defecto el degradado del tono (`color`, `unit` `"minutes"`/`"count"`
+para un eje con cifras redondas, `average` para la línea de media), `LineChart`/`Sparkline`, `CalendarHeatmap` y
+`HourHeatmap`; colores por nivel con `levelColor`/`levelBackground` y degradados con `barGradient` (`charts/colors.ts`).
+Se animan al entrar en pantalla con `useInView`.
+
+Celebraciones: `burst(host, colores)` (`components/fx/burst.ts`) lanza chispas y una onda desde un elemento; no hace
+nada con "reducir movimiento".
 
 ## Clases del sistema (`globals.css`)
 
@@ -61,12 +70,20 @@ Superficies: `bg`, `surface`, `surface-2`, `surface-3`; bordes `border`, `border
   `shine` (brillo que cruza un botón).
 - Animación: `animate-in`, `page-in`, `stagger` (hijos escalonados), `pop-in`, `bar-in`, `grow-up` (barras
   verticales), `ring-in`, `animate-float`, `animate-glow`, `skeleton`, `live-dot`.
-- Aparición al hacer scroll: añade `data-reveal` (o `data-reveal="120"` para un retraso en ms) a bloques que están
-  debajo del primer pantallazo. No lo pongas en lo que se ve al cargar.
+- Aparición al hacer scroll: añade `data-reveal` a bloques que están debajo del primer pantallazo (no en lo que se ve
+  al cargar). Es solo CSS (`animation-timeline: view()`): avanza con el scroll, no toca el DOM y, sin soporte o con
+  "reducir movimiento", el bloque se ve sin animación. Para escalonar elementos de una misma fila usa
+  `data-reveal="60"`, `"120"`, `"240"` o `"360"`. `reveal-grow` hace crecer una barra horizontal al verse.
+- Utilidades: `no-scrollbar` (filas que se desplazan en horizontal), `select-chevron` (flecha propia de los `<select>`,
+  ya incluida en `Select`).
 - Decoración: `dot-grid` (rejilla de puntos), manchas de color con `bg-tone opacity-[0.15] blur-3xl rounded-full`
   en un `absolute` con `pointer-events-none` y `aria-hidden`.
 
-Las clases del sistema están en `@layer components`, así que cualquier utilidad de Tailwind las sobrescribe.
+Las clases del sistema están en `@layer components`, así que cualquier utilidad de Tailwind las sobrescribe. El foco
+global (`:focus-visible`) está en `@layer base`: `focus:outline-none` lo anula donde haya un foco propio.
+
+La luz que sigue al cursor (`spotlight`) la mueve `<Interactions />`, montado en el `AppShell`; una página pública que
+use `spotlight` debe montarlo también (como la portada).
 
 ## Patrones
 
@@ -77,5 +94,12 @@ Las clases del sistema están en `@layer components`, así que cualquier utilida
 - **Datos:** el tono de la sección para la serie principal, `--tone-2` para la secundaria; categorías con su color
   propio. Barras con esquinas redondeadas y degradado; ejes y rejillas muy tenues (`--grid-line`).
 - **Estados:** vacío con `EmptyState` (icono + frase amable + acción); éxito en verde o oro; error en `danger`.
+- **Tarjetas destacadas:** el tono se oscurece solo dentro de `card-feature` (más en modo oscuro) para que el texto
+  blanco se lea; no añadas capas oscuras propias. Decoraciones que se salen de una tarjeta → `overflow-clip`, no
+  `overflow-hidden` (con hidden la tarjeta se vuelve desplazable y el foco puede moverla).
+- **Tarjetas que cambian según su ancho:** consultas de contenedor de Tailwind (`@container` en el padre, `@3xl:` en
+  los hijos), como la tarjeta de tareas rápidas en el Inicio frente a `/microtasks`.
+- **Overlays fijos dentro de una página** (p. ej. el modo sin distracciones): renderízalos con `createPortal` en
+  `document.body`.
 - **Accesibilidad:** contraste AA en claro y oscuro; foco visible (ya global); iconos decorativos con `aria-hidden`;
   no quites textos, etiquetas, roles ni `data-testid`: las pruebas E2E dependen de ellos.

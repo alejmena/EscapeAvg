@@ -1,7 +1,7 @@
 import { forwardRef } from "react";
 import { cn } from "@/lib/cn";
 
-type Variant = "primary" | "tone" | "secondary" | "ghost" | "danger" | "success";
+type Variant = "primary" | "tone" | "inverse" | "secondary" | "ghost" | "danger" | "success";
 type Size = "sm" | "md" | "lg" | "icon";
 
 const variants: Record<Variant, string> = {
@@ -10,6 +10,9 @@ const variants: Record<Variant, string> = {
     "shine bg-[image:var(--brand-gradient)] bg-[length:140%_100%] bg-left text-white shadow-[0_1px_0_rgb(255_255_255/0.25)_inset,0_10px_24px_-10px_var(--accent)] hover:bg-right hover:shadow-[0_1px_0_rgb(255_255_255/0.25)_inset,0_14px_30px_-10px_var(--accent-2)] transition-[background-position,box-shadow,transform]",
   // Color de la sección actual.
   tone: "shine bg-gradient-to-br from-tone to-tone-2 text-white shadow-[0_1px_0_rgb(255_255_255/0.25)_inset,0_10px_22px_-10px_var(--tone)] hover:brightness-110",
+  // Blanco sobre tarjetas destacadas (card-feature), con el texto en un tono profundo de la sección.
+  inverse:
+    "shine bg-white text-[color:color-mix(in_srgb,var(--tone)_72%,black)] shadow-[0_1px_0_rgb(255_255_255/0.6)_inset,0_12px_26px_-12px_rgb(0_0_0/0.45)] hover:shadow-[0_1px_0_rgb(255_255_255/0.6)_inset,0_16px_32px_-12px_rgb(0_0_0/0.5)]",
   secondary:
     "bg-surface/90 text-text border border-border shadow-[0_1px_2px_rgb(21_19_43/0.06)] hover:border-border-strong hover:bg-surface",
   ghost: "text-muted hover:text-text hover:bg-surface-2",

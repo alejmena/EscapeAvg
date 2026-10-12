@@ -59,7 +59,7 @@ export function CardTitle({
   );
 }
 
-type BadgeVariant = "neutral" | "tone" | "accent" | "success" | "warning" | "danger" | "solid";
+export type BadgeVariant = "neutral" | "tone" | "accent" | "success" | "warning" | "danger" | "gold" | "solid";
 
 const badgeVariants: Record<BadgeVariant, string> = {
   neutral: "bg-surface-2 text-muted",
@@ -68,6 +68,7 @@ const badgeVariants: Record<BadgeVariant, string> = {
   success: "bg-success-soft text-success",
   warning: "bg-warning-soft text-warning",
   danger: "bg-danger-soft text-danger",
+  gold: "bg-gold-soft text-[var(--gold)] ring-1 ring-inset ring-[color-mix(in_srgb,var(--gold)_30%,transparent)]",
   solid: "bg-gradient-to-r from-tone to-tone-2 text-white shadow-[0_4px_10px_-4px_var(--tone)]",
 };
 
@@ -206,11 +207,11 @@ export function StatTile({
       {delta && (
         <p
           className={cn(
-            "mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11.5px] font-semibold",
+            "mt-2 inline-flex max-w-full items-start gap-1 rounded-xl px-2 py-0.5 text-[11.5px] font-semibold leading-snug",
             trend === "up" ? "bg-success-soft text-success" : trend === "down" ? "bg-danger-soft text-danger" : "bg-surface-2 text-muted",
           )}
         >
-          {trend && <TrendIcon size={12} aria-hidden />}
+          {trend && <TrendIcon size={12} className="mt-[2px] shrink-0" aria-hidden />}
           {delta}
         </p>
       )}
@@ -272,7 +273,11 @@ export function PageHeader({
         </div>
       </div>
       {action && <div className="relative">{action}</div>}
-      {subtitle && <p className="relative -mt-1 w-full max-w-2xl text-[15px] leading-relaxed text-muted">{subtitle}</p>}
+      {subtitle && (
+        <div className="relative -mt-1 basis-full">
+          <p className="max-w-2xl text-[15px] leading-relaxed text-muted">{subtitle}</p>
+        </div>
+      )}
     </header>
   );
 }

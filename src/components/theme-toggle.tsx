@@ -4,7 +4,7 @@ import { useSyncExternalStore } from "react";
 import { Monitor, Moon, Sun } from "lucide-react";
 import { cn } from "@/lib/cn";
 
-type Theme = "light" | "dark" | "system";
+export type Theme = "light" | "dark" | "system";
 
 const listeners = new Set<() => void>();
 
@@ -31,17 +31,24 @@ function apply(theme: Theme) {
   document.documentElement.classList.toggle("dark", dark);
 }
 
+/** Tema elegido (claro, oscuro o el del sistema), compartido por todos los selectores de la app. */
+export function useTheme(): Theme {
+  return useSyncExternalStore(subscribe, readTheme, () => "system" as Theme);
+}
+
+export function setTheme(t: Theme) {
+  try {
+    localStorage.setItem("theme", t);
+  } catch {
+    // Almacenamiento no disponible: el tema se aplica igualmente en esta sesión.
+  }
+  apply(t);
+  listeners.forEach((l) => l());
+}
+
 export function ThemeToggle({ className }: { className?: string }) {
-  const theme = useSyncExternalStore(subscribe, readTheme, () => "system" as Theme);
-  const choose = (t: Theme) => {
-    try {
-      localStorage.setItem("theme", t);
-    } catch {
-      // Almacenamiento no disponible: el tema se aplica igualmente en esta sesión.
-    }
-    apply(t);
-    listeners.forEach((l) => l());
-  };
+  const theme = useTheme();
+  const choose = setTheme;
   const opts: { value: Theme; icon: React.ReactNode; label: string }[] = [
     { value: "light", icon: <Sun size={14} />, label: "Claro" },
     { value: "dark", icon: <Moon size={14} />, label: "Oscuro" },

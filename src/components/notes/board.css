@@ -1,0 +1,291 @@
+/* Tablero de notas: lienzo con rejilla de puntos y notas adhesivas con papel, sombra y movimiento. */
+
+/* Lienzo: base translúcida con brillos del tono; los puntos van en la capa interior para que se desplacen con el contenido. */
+.board-canvas {
+  background:
+    radial-gradient(70% 60% at 0% 0%, color-mix(in srgb, var(--tone) 10%, transparent), transparent 70%),
+    radial-gradient(60% 60% at 100% 100%, color-mix(in srgb, var(--tone-2) 9%, transparent), transparent 70%),
+    color-mix(in srgb, var(--surface) 62%, transparent);
+  border: 1px solid var(--card-border);
+  box-shadow:
+    0 0 0 1px var(--card-edge),
+    0 1px 0 rgb(255 255 255 / 0.6) inset,
+    var(--shadow-md);
+}
+.dark .board-canvas {
+  background:
+    radial-gradient(70% 60% at 0% 0%, color-mix(in srgb, var(--tone) 9%, transparent), transparent 70%),
+    radial-gradient(60% 60% at 100% 100%, color-mix(in srgb, var(--tone-2) 7%, transparent), transparent 70%),
+    color-mix(in srgb, var(--surface) 70%, transparent);
+  box-shadow:
+    0 0 0 1px var(--card-edge),
+    var(--shadow-md);
+}
+.board-dots {
+  background-image: radial-gradient(color-mix(in srgb, var(--tone) 30%, var(--border-strong)) 1.2px, transparent 1.5px);
+  background-size: 24px 24px;
+  background-position: 12px 12px;
+}
+.dark .board-dots {
+  background-image: radial-gradient(color-mix(in srgb, var(--tone) 22%, var(--border-strong)) 1.2px, transparent 1.5px);
+}
+
+/* Papel de cada color (claro). */
+.note-paper[data-color="yellow"] {
+  --paper: #fff6b8;
+  --paper-2: #ffe878;
+  --ink: #3b3300;
+  --swatch: #facc15;
+}
+.note-paper[data-color="pink"] {
+  --paper: #ffe0ec;
+  --paper-2: #ffc2d8;
+  --ink: #4a1027;
+  --swatch: #f472b6;
+}
+.note-paper[data-color="blue"] {
+  --paper: #dfeeff;
+  --paper-2: #bcdaff;
+  --ink: #0b2a4a;
+  --swatch: #60a5fa;
+}
+.note-paper[data-color="green"] {
+  --paper: #ddf8e5;
+  --paper-2: #b9ecc8;
+  --ink: #0b3b1e;
+  --swatch: #4ade80;
+}
+.note-paper[data-color="purple"] {
+  --paper: #eee6ff;
+  --paper-2: #d7c8ff;
+  --ink: #2a1460;
+  --swatch: #a78bfa;
+}
+.note-paper[data-color="orange"] {
+  --paper: #ffe8d1;
+  --paper-2: #ffcf9f;
+  --ink: #4a2600;
+  --swatch: #fb923c;
+}
+.note-paper[data-color="gray"] {
+  --paper: #f3f3f6;
+  --paper-2: #dcdce4;
+  --ink: #24242c;
+  --swatch: #a1a1aa;
+}
+/* En oscuro, el papel se apaga un poco pero conserva el color (como bajo una luz tenue). */
+.dark .note-paper[data-color="yellow"] {
+  --paper: #e9d77a;
+  --paper-2: #d6c055;
+  --ink: #2a2300;
+}
+.dark .note-paper[data-color="pink"] {
+  --paper: #eeb3c9;
+  --paper-2: #df93b0;
+  --ink: #3a0a1e;
+}
+.dark .note-paper[data-color="blue"] {
+  --paper: #a9cbef;
+  --paper-2: #8bb4e4;
+  --ink: #06233f;
+}
+.dark .note-paper[data-color="green"] {
+  --paper: #a8dcb8;
+  --paper-2: #88cb9d;
+  --ink: #063219;
+}
+.dark .note-paper[data-color="purple"] {
+  --paper: #c4b6ee;
+  --paper-2: #a998e2;
+  --ink: #1d0c4f;
+}
+.dark .note-paper[data-color="orange"] {
+  --paper: #efc298;
+  --paper-2: #e2a671;
+  --ink: #3a1b00;
+}
+.dark .note-paper[data-color="gray"] {
+  --paper: #c8c8d2;
+  --paper-2: #adadba;
+  --ink: #1d1d25;
+}
+
+@keyframes sticky-in {
+  from {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.9);
+  }
+}
+
+/* La nota: papel con degradado, sombra en capas y una ligera inclinación en reposo que se endereza al usarla. */
+.note-paper {
+  --rot: 0deg;
+  color: var(--ink);
+  background: linear-gradient(174deg, var(--paper) 0%, var(--paper-2) 100%);
+  border-radius: 14px;
+  rotate: var(--rot);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.6) inset,
+    0 0 0 1px rgb(40 30 0 / 0.05),
+    0 1px 2px rgb(40 30 0 / 0.1),
+    0 8px 14px -6px rgb(40 30 0 / 0.16),
+    0 22px 30px -20px rgb(40 30 0 / 0.38);
+  animation: sticky-in 460ms var(--ease-spring) backwards;
+  animation-delay: var(--delay, 0ms);
+  transition:
+    rotate 380ms var(--ease-spring),
+    scale 280ms var(--ease-out),
+    box-shadow 280ms var(--ease-out),
+    opacity 300ms ease,
+    filter 300ms ease;
+}
+.dark .note-paper {
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.35) inset,
+    0 1px 2px rgb(0 0 0 / 0.4),
+    0 10px 18px -8px rgb(0 0 0 / 0.55),
+    0 26px 36px -20px rgb(0 0 0 / 0.75);
+}
+/* Franja adhesiva: un poco más oscura arriba. */
+.note-paper::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 34px;
+  border-radius: 14px 14px 0 0;
+  background: linear-gradient(180deg, rgb(0 0 0 / 0.06), transparent);
+  pointer-events: none;
+}
+@media (hover: hover) {
+  .note-paper:hover {
+    rotate: 0deg;
+    scale: 1.012;
+    box-shadow:
+      0 1px 0 rgb(255 255 255 / 0.6) inset,
+      0 0 0 1px rgb(40 30 0 / 0.05),
+      0 2px 4px rgb(40 30 0 / 0.1),
+      0 14px 22px -8px rgb(40 30 0 / 0.2),
+      0 30px 40px -22px rgb(40 30 0 / 0.42);
+  }
+}
+.note-paper:focus-within {
+  rotate: 0deg;
+}
+/* Al arrastrar: se levanta y gira un poco, como al despegarla. */
+.note-paper[data-dragging] {
+  rotate: 2deg;
+  scale: 1.045;
+  cursor: grabbing;
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.6) inset,
+    0 4px 8px rgb(40 30 0 / 0.12),
+    0 26px 36px -12px rgb(40 30 0 / 0.3),
+    0 50px 60px -30px rgb(40 30 0 / 0.5);
+}
+.dark .note-paper[data-dragging] {
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.35) inset,
+    0 30px 40px -12px rgb(0 0 0 / 0.7),
+    0 50px 60px -30px rgb(0 0 0 / 0.85);
+}
+.note-paper[data-resizing] {
+  rotate: 0deg;
+}
+.note-paper[data-dimmed] {
+  opacity: 0.28;
+  filter: saturate(0.4);
+}
+.note-paper[data-leaving] {
+  opacity: 0;
+  scale: 0.82;
+  rotate: -4deg;
+  pointer-events: none;
+}
+/* "Agrupar": las notas viajan a su sitio en vez de saltar. */
+.board-arranging .note-paper {
+  transition:
+    left 620ms var(--ease-out),
+    top 620ms var(--ease-out),
+    rotate 380ms var(--ease-spring),
+    box-shadow 280ms var(--ease-out);
+}
+
+/* Herramientas de la nota: discretas hasta que pasas por encima (siempre visibles en táctil). */
+.note-tools {
+  transition: opacity 200ms ease;
+}
+@media (hover: hover) {
+  .note-paper:not(:hover):not(:focus-within) .note-tools {
+    opacity: 0;
+  }
+}
+.note-btn {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  opacity: 0.6;
+  transition:
+    opacity 150ms ease,
+    background-color 150ms ease,
+    transform 150ms var(--ease-out);
+}
+.note-btn:hover {
+  opacity: 1;
+  background: rgb(0 0 0 / 0.08);
+}
+.note-btn:active {
+  transform: scale(0.9);
+}
+.note-chip {
+  background: rgb(0 0 0 / 0.08);
+}
+
+/* Esquina doblada (y asa para cambiar el tamaño). */
+.note-corner {
+  background: linear-gradient(135deg, transparent 50%, color-mix(in srgb, var(--paper-2) 78%, #000) 50%);
+  border-bottom-right-radius: 14px;
+  filter: drop-shadow(-1px -1px 1px rgb(0 0 0 / 0.08));
+  transition: width 200ms var(--ease-out), height 200ms var(--ease-out);
+}
+@media (hover: hover) {
+  .note-paper:hover .note-corner {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+/* Vista previa en miniatura de cada tablero. */
+.mini-board {
+  background-color: color-mix(in srgb, var(--surface-2) 80%, transparent);
+  background-image: radial-gradient(var(--grid-line) 1px, transparent 1px);
+  background-size: 6px 6px;
+}
+.dark .note-paper:hover {
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.35) inset,
+    0 2px 4px rgb(0 0 0 / 0.4),
+    0 16px 24px -8px rgb(0 0 0 / 0.6),
+    0 32px 44px -22px rgb(0 0 0 / 0.8);
+}
+/* Al escribir: el texto no lleva el anillo global; la nota se marca con su propio color. */
+.note-paper textarea:focus-visible {
+  outline: none;
+}
+.note-paper:has(textarea:focus-visible) {
+  outline: 2px solid color-mix(in srgb, var(--swatch) 75%, transparent);
+  outline-offset: 3px;
+}
+/* Panel de color y grupo, dentro de la nota. */
+.note-panel {
+  background: color-mix(in srgb, var(--paper) 55%, rgb(255 255 255 / 0.6));
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.06), 0 6px 14px -8px rgb(0 0 0 / 0.25);
+}
+.note-panel input {
+  background: rgb(0 0 0 / 0.06);
+}
+.note-panel input::placeholder {
+  color: currentColor;
+  opacity: 0.55;
+}

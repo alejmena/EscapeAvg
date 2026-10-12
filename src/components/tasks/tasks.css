@@ -1,0 +1,161 @@
+/* Tareas: animaciones al completar (casilla, fila) y detalles de las filas.
+   Solo animaciones y piezas decorativas: los colores y bordes van con utilidades en el JSX,
+   así se pueden sobrescribir desde fuera. "Reducir movimiento" ya lo anula globals.css. */
+
+/* Anillo que se dibuja alrededor de la casilla y se expande. */
+@keyframes tc-ring {
+  0% {
+    stroke-dashoffset: 1;
+    opacity: 1;
+    transform: scale(0.9);
+  }
+  55% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+    transform: scale(1.55);
+  }
+}
+.tc-ring {
+  transform-origin: center;
+  transform-box: fill-box;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  opacity: 0;
+  animation: tc-ring 720ms var(--ease-out) both;
+}
+
+/* La marca de la casilla se dibuja y hace "pop". */
+@keyframes tc-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.tc-draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+[data-burst] .tc-draw {
+  animation: tc-draw 380ms 120ms var(--ease-out) both;
+}
+@keyframes tc-pop {
+  0% {
+    transform: scale(0.7);
+  }
+  45% {
+    transform: scale(1.22);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.tc-pop[data-burst] {
+  animation: tc-pop 520ms var(--ease-spring) both;
+}
+
+/* Chispas que salen de la casilla. */
+.tc-sparks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.tc-sparks i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  margin: -2.5px 0 0 -2.5px;
+  border-radius: 999px;
+  background: var(--c);
+  opacity: 0;
+  animation: tc-spark 640ms 80ms var(--ease-out) both;
+}
+@keyframes tc-spark {
+  0% {
+    opacity: 1;
+    transform: rotate(var(--a)) translateY(0) scale(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(var(--a)) translateY(calc(var(--d, 20px) * -1)) scale(0.2);
+  }
+}
+
+/* Fila que se completa: destello verde, se tacha y se apaga mientras el servidor la mueve. */
+@keyframes task-row-done {
+  0% {
+    background-color: color-mix(in srgb, var(--success) 22%, transparent);
+  }
+  60% {
+    background-color: color-mix(in srgb, var(--success) 10%, transparent);
+  }
+  100% {
+    background-color: transparent;
+    opacity: 0.6;
+  }
+}
+.task-row-done {
+  animation: task-row-done 900ms var(--ease-out) forwards;
+}
+
+/* Tachado que se dibuja de izquierda a derecha. */
+.task-strike {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 0 58%;
+  background-size: 100% 1.5px;
+  transition:
+    background-size 420ms var(--ease-out),
+    color 300ms ease;
+}
+.task-strike[data-done="false"] {
+  background-size: 0% 1.5px;
+}
+
+/* Barra lateral de la fila (prioridad): crece al pasar por encima. */
+.task-accent {
+  transition:
+    transform 260ms var(--ease-out),
+    opacity 200ms ease;
+  transform: scaleY(0.72);
+}
+.group:hover > .task-accent,
+.group:focus-within > .task-accent {
+  transform: scaleY(1);
+}
+
+/* Campo protagonista para añadir: halo que respira al enfocarlo. */
+@keyframes qa-halo {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 4px rgb(255 255 255 / 0.22),
+      0 18px 40px -18px rgb(0 0 0 / 0.45);
+  }
+  50% {
+    box-shadow:
+      0 0 0 7px rgb(255 255 255 / 0.14),
+      0 18px 40px -18px rgb(0 0 0 / 0.45);
+  }
+}
+.qa-field:focus-within {
+  animation: qa-halo 2.4s ease-in-out infinite;
+}
+
+/* Al guardar una tarea nueva, el "+" gira. */
+@keyframes qa-spin {
+  to {
+    transform: rotate(180deg);
+  }
+}
+.qa-spin {
+  animation: qa-spin 600ms var(--ease-out) infinite;
+}

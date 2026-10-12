@@ -1,4 +1,5 @@
-/* Nube de ideas flotantes. */
+/* Ideas: nube flotante sobre la tarjeta destacada, tarjetas del catálogo y distintivos dorado / turquesa. */
+
 @keyframes idea-float {
   0%,
   100% {
@@ -8,32 +9,62 @@
     transform: translate(var(--dx, 4px), var(--dy, -10px));
   }
 }
+/* Entrada al barajar: anima `scale` y `opacity` para no pisar el flotado (que usa `transform`). */
+@keyframes idea-pop {
+  from {
+    opacity: 0;
+    scale: 0.6;
+  }
+}
 .idea-bubble {
-  animation: idea-float var(--t, 6s) ease-in-out infinite;
-  animation-delay: var(--d, 0s);
+  animation:
+    idea-float var(--t, 6s) ease-in-out infinite var(--d, 0s),
+    idea-pop 520ms var(--ease-spring) backwards var(--in, 0ms);
   transition:
     scale 220ms var(--ease-spring),
-    box-shadow 220ms ease;
+    box-shadow 220ms ease,
+    background-color 200ms ease;
 }
-.idea-bubble:hover {
-  scale: 1.07;
+@media (hover: hover) {
+  .idea-bubble:hover {
+    scale: 1.07;
+  }
 }
 
+/* Burbuja normal: píldora clara y nítida sobre el degradado (texto en un tono profundo del color de la sección). */
+.idea-glass {
+  color: color-mix(in srgb, var(--tone) 30%, #1a1206);
+  background: rgb(255 255 255 / 0.9);
+  border-color: rgb(255 255 255 / 0.95);
+  box-shadow:
+    0 1px 0 #fff inset,
+    0 10px 22px -12px rgb(80 30 0 / 0.5);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+.idea-glass:hover {
+  background: #fff;
+}
+.idea-glass .idea-emoji {
+  background: color-mix(in srgb, var(--tone) 16%, #fff);
+}
+
+/* Dorada: degradado de oro con un brillo que cruza de vez en cuando. */
 .idea-gold {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, #fff3c4 0%, #fbbf24 45%, #d97706 100%);
+  background: linear-gradient(135deg, #fff6d1 0%, #fcd34d 40%, #f59e0b 75%, #d97706 100%);
   color: #3a2200;
-  border-color: rgb(251 191 36 / 0.9);
+  border-color: rgb(255 236 170 / 0.95);
   box-shadow:
-    0 0 0 1px rgb(255 255 255 / 0.4) inset,
-    0 8px 28px -6px rgb(245 158 11 / 0.75);
+    0 0 0 1px rgb(255 255 255 / 0.45) inset,
+    0 10px 28px -8px rgb(180 83 9 / 0.65);
 }
 .idea-gold::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.4) 50%, transparent 70%);
+  background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.55) 50%, transparent 70%);
   transform: translateX(-120%);
   animation: idea-shine 3.6s ease-in-out infinite;
   animation-delay: var(--d, 0s);
@@ -49,16 +80,115 @@
   }
 }
 
+/* Turquesa: niveles de idioma clave. */
 .idea-key {
-  background: linear-gradient(135deg, #a7f3d0 0%, #14b8a6 60%, #0f766e 100%);
+  background: linear-gradient(135deg, #ccfbf1 0%, #2dd4bf 50%, #0d9488 100%);
   color: #032b26;
-  border-color: rgb(20 184 166 / 0.8);
-  box-shadow: 0 8px 24px -8px rgb(20 184 166 / 0.7);
+  border-color: rgb(153 246 228 / 0.9);
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.35) inset,
+    0 10px 24px -8px rgb(13 148 136 / 0.6);
 }
 
+/* Distintivos pequeños. */
+.idea-badge-gold {
+  background: linear-gradient(120deg, #fde68a, #f59e0b);
+  color: #3a2200;
+  box-shadow: 0 4px 10px -4px rgb(217 119 6 / 0.6);
+}
+.idea-badge-key {
+  background: color-mix(in srgb, #14b8a6 16%, transparent);
+  color: #0f766e;
+}
+.dark .idea-badge-key {
+  color: #5eead4;
+}
 .gold-text {
-  background: linear-gradient(135deg, #f59e0b, #fbbf24 40%, #b45309);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--gold);
+}
+
+/* Destellos decorativos de la tarjeta destacada. */
+@keyframes idea-twinkle {
+  0%,
+  100% {
+    opacity: 0.15;
+    scale: 0.7;
+  }
+  50% {
+    opacity: 0.9;
+    scale: 1;
+  }
+}
+.idea-spark {
+  animation: idea-twinkle var(--t, 3s) ease-in-out infinite var(--d, 0s);
+}
+
+/* Chip de área: al pasar por encima, su color. */
+.idea-area {
+  transition:
+    background-color 200ms ease,
+    color 200ms ease,
+    box-shadow 200ms ease,
+    transform 160ms var(--ease-out);
+}
+.idea-area:not([aria-pressed="true"]):hover {
+  color: var(--text);
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--a) 55%, transparent);
+  background: color-mix(in srgb, var(--a) 10%, var(--surface));
+}
+.idea-area[aria-pressed="true"] {
+  color: #fff;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--a) 80%, #fff), var(--a));
+  box-shadow: 0 8px 18px -8px var(--a);
+}
+
+/* Tarjeta del catálogo: brillo del color del área al pasar por encima. */
+.idea-card {
+  isolation: isolate;
+}
+.idea-card::before {
+  content: "";
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  z-index: -1;
+  width: 140px;
+  height: 140px;
+  border-radius: 999px;
+  background: var(--a);
+  opacity: 0.1;
+  filter: blur(30px);
+  transition: opacity 300ms ease;
+  pointer-events: none;
+}
+@media (hover: hover) {
+  .idea-card:hover::before {
+    opacity: 0.26;
+  }
+}
+.idea-card-gold {
+  box-shadow:
+    0 0 0 1.5px rgb(245 158 11 / 0.55),
+    0 14px 32px -18px rgb(217 119 6 / 0.7),
+    var(--shadow-md);
+}
+.idea-card-gold::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: linear-gradient(90deg, #fde68a, #f59e0b, #fde68a);
+  pointer-events: none;
+}
+.idea-card-key {
+  box-shadow:
+    0 0 0 1.5px rgb(20 184 166 / 0.5),
+    0 14px 32px -18px rgb(13 148 136 / 0.6),
+    var(--shadow-md);
+}
+
+/* Fila de chips con desvanecido en los bordes. */
+.idea-scroll-fade {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 16px, #000 calc(100% - 28px), transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 16px, #000 calc(100% - 28px), transparent);
 }

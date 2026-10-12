@@ -8,10 +8,6 @@ const height = (className?: string) => (className && /(^|\s)h-/.test(className) 
 const field =
   "rounded-xl border border-border bg-surface/90 px-3.5 text-sm text-text shadow-[0_1px_2px_rgb(21_19_43/0.04)] placeholder:text-faint transition-[border-color,box-shadow,background-color] hover:border-border-strong focus:border-accent focus:bg-surface focus:shadow-[0_0_0_4px_var(--ring)] focus:outline-none";
 
-// Flecha propia para los <select> (la nativa varía entre sistemas).
-const chevron =
-  "appearance-none bg-no-repeat bg-[length:16px_16px] bg-[position:right_0.7rem_center] bg-[image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a87a3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")]";
-
 export const Input = forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(function Input(
   { className, ...props },
   ref,
@@ -29,7 +25,7 @@ export const Select = forwardRef<HTMLSelectElement, React.SelectHTMLAttributes<H
   { className, ...props },
   ref,
 ) {
-  return <select ref={ref} className={cn(field, chevron, width(className), height(className), "pr-9", className)} {...props} />;
+  return <select ref={ref} className={cn(field, "select-chevron", width(className), height(className), "pr-9", className)} {...props} />;
 });
 
 export function Label({ className, ...props }: React.LabelHTMLAttributes<HTMLLabelElement>) {

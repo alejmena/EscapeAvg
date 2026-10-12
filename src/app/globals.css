@@ -384,10 +384,13 @@ h3 {
   color: var(--text);
 }
 
-:focus-visible {
-  outline: 3px solid var(--ring);
-  outline-offset: 2px;
-  border-radius: 10px;
+/* En la capa base: utilidades como focus:outline-none pueden anularlo donde haya un foco propio. */
+@layer base {
+  :focus-visible {
+    outline: 3px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 10px;
+  }
 }
 
 * {
@@ -463,17 +466,28 @@ h3 {
   --card: transparent;
   position: relative;
   isolation: isolate;
-  overflow: hidden;
+  /* clip (no hidden): las decoraciones que se salen no convierten la tarjeta en zona desplazable. */
+  overflow: clip;
+  /* Tono algo más profundo para que el texto blanco se lea bien (más aún en oscuro). */
+  --ft: color-mix(in srgb, var(--tone) 86%, #140d33);
+  --ft2: color-mix(in srgb, var(--tone-2) 88%, #140d33);
   color: var(--text);
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
   background:
-    radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--tone-2) 85%, transparent), transparent 60%),
-    radial-gradient(90% 120% at 0% 100%, color-mix(in srgb, var(--tone) 70%, #000 10%), transparent 70%),
-    linear-gradient(135deg, var(--tone) 0%, color-mix(in srgb, var(--tone) 55%, var(--tone-2)) 100%);
+    radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--ft2) 85%, transparent), transparent 60%),
+    radial-gradient(90% 120% at 0% 100%, color-mix(in srgb, var(--ft) 80%, #000), transparent 70%),
+    linear-gradient(135deg, var(--ft) 0%, color-mix(in srgb, var(--ft) 55%, var(--ft2)) 100%);
   border: 1px solid rgb(255 255 255 / 0.18);
   box-shadow:
     0 1px 0 rgb(255 255 255 / 0.35) inset,
     0 24px 48px -20px color-mix(in srgb, var(--tone) 70%, transparent),
     0 8px 18px -10px color-mix(in srgb, var(--tone) 50%, transparent);
+}
+.dark .card-feature {
+  --ft: color-mix(in srgb, var(--tone) 62%, #07060e);
+  --ft2: color-mix(in srgb, var(--tone-2) 66%, #07060e);
+  border-color: rgb(255 255 255 / 0.1);
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
 }
 .card-feature::after {
   content: "";
@@ -485,10 +499,6 @@ h3 {
   background-size: 18px 18px;
   mask-image: radial-gradient(80% 70% at 85% 10%, #000, transparent 70%);
   -webkit-mask-image: radial-gradient(80% 70% at 85% 10%, #000, transparent 70%);
-}
-.card-feature .text-accent,
-.card-feature .text-tone {
-  color: #fff;
 }
 
 /* Tarjeta con tinte del tono (más suave que la destacada). */
@@ -662,15 +672,59 @@ h3 {
   }
 }
 
-/* Aparición al entrar en pantalla (data-reveal). Solo se oculta si el JS está listo. */
-.fx-ready [data-reveal]:not([data-revealed]) {
-  opacity: 0;
-  transform: translateY(18px);
+/* Aparición al entrar en pantalla (data-reveal) y barras que crecen al verse (reveal-grow), solo con CSS:
+   la animación avanza con el scroll. Con "backwards", al terminar deja de aplicarse (no queda transform
+   ni contexto de apilamiento). Sin soporte o con "reducir movimiento", el contenido se ve sin animación. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    [data-reveal] {
+      animation: reveal-in linear backwards;
+      animation-timeline: view();
+      animation-range: entry 0% entry 55%;
+    }
+    /* data-reveal="<ms>": los elementos de una misma fila entran escalonados. */
+    [data-reveal="60"],
+    [data-reveal="80"],
+    [data-reveal="90"] {
+      animation-range: entry 8% entry 63%;
+    }
+    [data-reveal="120"],
+    [data-reveal="140"],
+    [data-reveal="160"] {
+      animation-range: entry 14% entry 69%;
+    }
+    [data-reveal="180"],
+    [data-reveal="240"] {
+      animation-range: entry 20% entry 75%;
+    }
+    [data-reveal="300"],
+    [data-reveal="360"],
+    [data-reveal="480"] {
+      animation-range: entry 26% entry 81%;
+    }
+    .reveal-grow {
+      animation: bar-in linear backwards;
+      animation-timeline: view();
+      animation-range: entry 20% cover 45%;
+    }
+  }
 }
-[data-reveal] {
-  transition:
-    opacity 700ms var(--ease-out),
-    transform 700ms var(--ease-out);
+
+/* Barras de desplazamiento ocultas (filas de chips o pestañas que se desplazan en horizontal). */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* <select> con flecha propia (la nativa varía entre sistemas). */
+.select-chevron {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a87a3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
+  background-position: right 0.7rem center;
 }
 
 /* ---------------------------------------------------------------------------
@@ -690,6 +744,13 @@ h3 {
   animation: fade-in-up 460ms var(--ease-out) both;
 }
 
+@keyframes reveal-in {
+  from {
+    opacity: 0;
+    translate: 0 22px;
+  }
+}
+
 @keyframes page-in {
   from {
     opacity: 0;
@@ -702,8 +763,9 @@ h3 {
     filter: none;
   }
 }
+/* "backwards": al terminar no deja transform ni filter, que convertirían <main> en el contenedor de los position:fixed. */
 .page-in {
-  animation: page-in 600ms var(--ease-out) both;
+  animation: page-in 600ms var(--ease-out) backwards;
 }
 
 @keyframes ring-in {
@@ -851,10 +913,6 @@ dialog[open]::backdrop {
     animation-duration: 0.01ms !important;
     animation-delay: 0ms !important;
     transition-duration: 0.01ms !important;
-  }
-  .fx-ready [data-reveal]:not([data-revealed]) {
-    opacity: 1;
-    transform: none;
   }
 }
 
