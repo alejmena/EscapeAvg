@@ -48,7 +48,7 @@ export function ThemeToggle({ className }: { className?: string }) {
     { value: "system", icon: <Monitor size={14} />, label: "Sistema" },
   ];
   return (
-    <div className={cn("inline-flex rounded-lg border border-border p-0.5", className)} role="radiogroup" aria-label="Tema">
+    <div className={cn("inline-flex rounded-full border border-border bg-surface-2/60 p-0.5", className)} role="radiogroup" aria-label="Tema">
       {opts.map((o) => (
         <button
           key={o.value}
@@ -57,7 +57,10 @@ export function ThemeToggle({ className }: { className?: string }) {
           aria-checked={theme === o.value}
           title={o.label}
           onClick={() => choose(o.value)}
-          className={cn("rounded-md p-1.5", theme === o.value ? "bg-surface-2 text-text" : "text-muted hover:text-text")}
+          className={cn(
+            "press rounded-full p-1.5",
+            theme === o.value ? "bg-surface text-text shadow-[0_1px_2px_rgb(21_19_43/0.1)] dark:bg-surface-3" : "text-muted hover:text-text",
+          )}
         >
           {o.icon}
         </button>
