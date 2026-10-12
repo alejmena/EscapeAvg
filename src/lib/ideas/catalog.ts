@@ -5,6 +5,12 @@ import { SELF } from "./catalog-self";
 import { LIFE } from "./catalog-life";
 import { MORE } from "./catalog-more";
 import { LANGUAGE_EXTRAS, languageIdeas } from "./catalog-languages";
+import { X_TECH } from "./catalog-x-tech";
+import { X_WORK } from "./catalog-x-work";
+import { X_SELF } from "./catalog-x-self";
+import { X_LIFE } from "./catalog-x-life";
+import { X_MORE } from "./catalog-x-more";
+import { X_BOOKS } from "./catalog-x-books";
 
 export const AREAS: { key: IdeaArea; label: string; emoji: string; color: string }[] = [
   { key: "lenguas", label: "Idiomas y lenguas", emoji: "🗣️", color: "#0ab3ff" },
@@ -47,7 +53,7 @@ function fromRows(area: IdeaArea, rows: IdeaRow[]): Idea[] {
 
 function build(): Idea[] {
   const out: Idea[] = [...languageIdeas(), ...fromRows("lenguas", LANGUAGE_EXTRAS)];
-  for (const group of [TECH, WORK, SELF, LIFE, MORE]) {
+  for (const group of [TECH, WORK, SELF, LIFE, MORE, X_TECH, X_WORK, X_SELF, X_LIFE, X_MORE, X_BOOKS]) {
     for (const [area, rows] of Object.entries(group) as [IdeaArea, IdeaRow[]][]) out.push(...fromRows(area, rows));
   }
   return out;

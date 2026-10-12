@@ -65,8 +65,11 @@ const FILTERS = [
 const LADDER_TOP = RANKS[RANKS.length - 1].minHours + 1;
 const REF_TOP = Math.max(...REFERENCES.map((r) => r.minutes));
 
-export default async function PhilosophyPage({ searchParams }: { searchParams: Promise<{ f?: string }> }) {
-  const { f } = await searchParams;
+// Frases por página: la colección es larga, se muestran por tandas con «Ver más».
+const PAGE = 24;
+
+export default async function PhilosophyPage({ searchParams }: { searchParams: Promise<{ f?: string; n?: string }> }) {
+  const { f, n } = await searchParams;
   const filter = FILTERS.some((x) => x.id === f) ? (f as (typeof FILTERS)[number]["id"]) : "all";
   const { supabase, today, profile } = await requireUser();
   const ready = await isDisciplineReady(supabase);
@@ -82,6 +85,8 @@ export default async function PhilosophyPage({ searchParams }: { searchParams: P
     filter === "fav"
       ? (favorites.map((id) => QUOTES.find((q) => q.id === id)).filter(Boolean) as Quote[])
       : QUOTES.filter((q) => filter === "all" || q.origin === filter);
+  const shown = Math.min(list.length, Math.max(PAGE, Math.floor(Number(n) / PAGE) * PAGE || PAGE));
+  const moreHref = `/philosophy?${filter === "all" ? "" : `f=${filter}&`}n=${shown + PAGE}#mas-frases`;
 
   return (
     <div className="stagger space-y-10 sm:space-y-14">
@@ -339,13 +344,22 @@ export default async function PhilosophyPage({ searchParams }: { searchParams: P
             {ready ? "Toca la estrella de una frase para guardarla." : "Las favoritas se activan con la actualización de la base de datos."}
           </EmptyState>
         ) : (
-          <div className="columns-1 gap-4 md:columns-2">
-            {list.map((q) => (
-              <div key={q.id} data-reveal className="mb-4 break-inside-avoid">
-                <QuoteCard quote={q} favorite={favSet.has(q.id)} ready={ready} label="Frase" />
+          <>
+            <div className="columns-1 gap-4 md:columns-2">
+              {list.slice(0, shown).map((q, i) => (
+                <div key={q.id} id={i === shown - PAGE ? "mas-frases" : undefined} data-reveal className="mb-4 scroll-mt-24 break-inside-avoid">
+                  <QuoteCard quote={q} favorite={favSet.has(q.id)} ready={ready} label="Frase" />
+                </div>
+              ))}
+            </div>
+            {list.length > shown && (
+              <div className="flex justify-center">
+                <Link href={moreHref} scroll={false} className={buttonClass("secondary", "lg")}>
+                  Ver más frases ({list.length - shown} restantes)
+                </Link>
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )}
       </section>
     </div>

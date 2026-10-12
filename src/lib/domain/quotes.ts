@@ -1,4 +1,5 @@
 import { diffDays, type ISODate } from "./dates";
+import { QUOTES_CHINA, QUOTES_RUSSIA } from "./quotes-extra";
 
 /**
  * Filosofía de disciplina: frases chinas y rusas.
@@ -22,7 +23,7 @@ export type Quote = {
   themes: QuoteTheme[];
 };
 
-export const QUOTES: readonly Quote[] = [
+const CORE: Quote[] = [
   // ----------------------------------------------------------------- China
   {
     id: "cn-mil-millas",
@@ -387,6 +388,9 @@ export const QUOTES: readonly Quote[] = [
     themes: ["esfuerzo"],
   },
 ];
+
+/** Toda la colección: las frases originales primero y la ampliación (quotes-extra.ts) después. */
+export const QUOTES: readonly Quote[] = [...CORE, ...QUOTES_CHINA, ...QUOTES_RUSSIA];
 
 export const ORIGIN_LABEL: Record<Quote["origin"], string> = { china: "China", rusia: "Rusia" };
 
