@@ -206,9 +206,18 @@ Sin cambios de esquema. `lib/domain/planner.ts` define `PlannerProvider` con dos
 
 Pantalla `/plan` y acceso desde Inicio ("Tu plan de hoy"). Consultas en `lib/data/planner.ts`.
 
-**Siguiente paso (IA):** un proveedor basado en un modelo de lenguaje implementará `PlannerProvider` (y
-`RecommendationProvider`) recibiendo exactamente los mismos datos agregados; se activará solo si existe una clave de API en
-el entorno y, si falla, se usará el proveedor por reglas. Las pantallas no cambian.
+**Proveedor con IA (implementado para el plan y el resumen):** `lib/ai/planner.ts` implementa `PlannerProvider` con
+Claude (`@anthropic-ai/sdk`, salida estructurada con zod). Se activa solo si existe `ANTHROPIC_API_KEY` (modelo
+configurable con `ANTHROPIC_MODEL`) y solo en `/plan`; el Inicio sigue usando las reglas para no esperar a la red.
+- El modelo recibe los mismos datos agregados que las reglas más el resultado de las reglas como punto de partida
+  (`lib/domain/planner-ai.ts`, sin red y testeado). Solo puede elegir entre tus tareas abiertas y redactar.
+- Lo que devuelve se valida contra tus datos (`mergeAiPlan` / `mergeAiReview`): ids reales, sin duplicados, máximo 6
+  tareas, sin pasarse de tu ritmo; ritmo, minutos hechos y lo que vence (y no cabe) se calculan sin IA.
+- Ante error de red, tiempo de espera (15 s), rechazo o respuesta inválida se usa el proveedor por reglas.
+- Misma entrada → misma respuesta: caché en memoria de 1 h para no pagar otra llamada al recargar.
+- La pantalla indica cuándo el texto lo redactó la IA.
+
+`RecommendationProvider` sigue siendo por reglas: las recomendaciones se muestran en el Inicio, donde no queremos latencia.
 
 ### PWA / móvil
 `manifest.webmanifest` incluido. Fase posterior: service worker para modo offline y notificaciones del temporizador.

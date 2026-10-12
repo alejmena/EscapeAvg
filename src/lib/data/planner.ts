@@ -5,19 +5,27 @@ import { isScheduled } from "@/lib/domain/habits";
 import { estimateAccuracy } from "@/lib/domain/stats";
 import { bestBlock } from "@/lib/domain/analytics";
 import { sumXp } from "@/lib/domain/gamification";
-import { ruleBasedPlanner, type DayPlan, type PlannerTask, type WeeklyReview } from "@/lib/domain/planner";
+import { ruleBasedPlanner, type DayPlan, type PlannerProvider, type PlannerTask, type WeeklyReview } from "@/lib/domain/planner";
+import { aiPlannerEnabled, claudePlanner } from "@/lib/ai/planner";
 import type { Habit, HabitLog, Profile } from "@/lib/types";
 import { getByCategory, getDaily, getHabitCompliance } from "./stats";
 import { getRestDays, getSessionPoints } from "./analytics";
 import { getProgress } from "./gamification";
 import { isQuickReady } from "./quick";
 
-/** Proveedor activo. Hoy es el de reglas; un proveedor con IA implementará la misma interfaz. */
-const provider = ruleBasedPlanner;
+/**
+ * Proveedor activo: Claude si hay ANTHROPIC_API_KEY y se pide (la pantalla /plan), si no las reglas.
+ * El Inicio usa siempre las reglas para no esperar a la red.
+ */
+function providerFor(ai: boolean): PlannerProvider {
+  return ai && aiPlannerEnabled() ? claudePlanner : ruleBasedPlanner;
+}
+
+export type PlannerOptions = { ai?: boolean };
 
 const TASK_FIELDS = "*";
 
-export async function getDayPlan(supabase: ServerSupabase, profile: Profile, today: ISODate): Promise<DayPlan> {
+export async function getDayPlan(supabase: ServerSupabase, profile: Profile, today: ISODate, opts: PlannerOptions = {}): Promise<DayPlan> {
   const tz = profile.timezone;
   const quickReady = await isQuickReady(supabase);
   let openTasks = supabase.from("tasks").select(TASK_FIELDS);
@@ -44,7 +52,7 @@ export async function getDayPlan(supabase: ServerSupabase, profile: Profile, tod
   ]);
   const logged = new Set(((logsRes.data ?? []) as Pick<HabitLog, "habit_id" | "status">[]).map((l) => l.habit_id));
   const acc = estimateAccuracy((estimatedRes.data ?? []) as { estimated_minutes: number | null; actual_seconds: number }[]);
-  return provider.planDay({
+  return providerFor(opts.ai ?? false).planDay({
     today,
     hour: localHour(new Date(), tz),
     tasks: (tasksRes.data ?? []) as PlannerTask[],
@@ -62,6 +70,7 @@ export async function getWeeklyReview(
   profile: Profile,
   today: ISODate,
   which: ReviewWeek,
+  opts: PlannerOptions = {},
 ): Promise<{ review: WeeklyReview; from: ISODate; to: ISODate }> {
   const tz = profile.timezone;
   const thisWeek = startOfWeek(today, profile.week_starts_on);
@@ -95,7 +104,7 @@ export async function getWeeklyReview(
     .filter((g) => which === "last" || g.achieved);
   const challenges = progress.xp.goals.filter((g) => g.day >= from && g.day <= to && !weeklyGoals.some((w) => w.title === g.title));
 
-  const review = await provider.weeklyReview({
+  const review = await providerFor(opts.ai ?? false).weeklyReview({
     week: { from, to },
     daily,
     previousDaily,

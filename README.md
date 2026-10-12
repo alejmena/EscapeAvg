@@ -24,7 +24,7 @@ Next.js 16 (App Router, Server Actions) · React 19 · TypeScript · Tailwind CS
 | Análisis avanzado (Fase 2) | Comparativas semana/mes/año con el mismo tramo anterior, calendario de actividad (mapa de calor), últimas 12 semanas y 12 meses, tendencia de 90 días, récords personales, mapa de calor día × hora por categoría, mejor día y franja, sesiones terminadas por franja, estimado vs. real por categoría, estadísticas por proyecto con proyección de fin, exportación CSV. |
 | Progreso (Fase 3) | Niveles y XP calculados solo con actividad real (concentración medida, tareas con antigüedad mínima, hábitos, días y semanas constantes, objetivos alcanzados) con topes anti‑abuso; 26 logros con fecha de desbloqueo; desafíos personales de 7 días basados en tu media; XP por semana y récords; barra de nivel en Inicio. |
 | Social (Fase 4) | Nombre de usuario, amigos (solicitud/aceptación), grupos con enlace de invitación, comparación semanal justa (constancia, % del objetivo propio, mejora) solo dentro de tu círculo y sin percentiles, desafíos compartidos con meta por persona. Compartir es opcional, recíproco y solo incluye totales. |
-| Plan (Fase 5) | Plan del día según tu ritmo real (vencimientos, prioridad, tareas pospuestas, precisión de tus estimaciones, mejor franja) con motivos visibles y "Mover a mañana" para lo que no cabe; resumen semanal con logros, mejoras y metas alcanzables. Preparado para un proveedor de IA. |
+| Plan (Fase 5) | Plan del día según tu ritmo real (vencimientos, prioridad, tareas pospuestas, precisión de tus estimaciones, mejor franja) con motivos visibles y "Mover a mañana" para lo que no cabe; resumen semanal con logros, mejoras y metas alcanzables. Con `ANTHROPIC_API_KEY`, Claude ordena y redacta el plan y el resumen en `/plan` a partir de los mismos datos (validado contra tus tareas reales; si falla, reglas). |
 | Recomendaciones | Motor de reglas con evidencia visible: tareas pospuestas, dificultad para empezar, hábitos en caída, precisión de estimaciones, mejor franja horaria, interrupciones, constancia de 90 días, mejor día de la semana, proyectos retrasados o parados. Interfaz preparada para un proveedor de IA. |
 | UX | Modo claro/oscuro/sistema, responsive con navegación inferior en móvil, PWA instalable (manifest), accesibilidad básica (roles ARIA, foco visible, movimiento reducido). |
 
@@ -34,7 +34,7 @@ Next.js 16 (App Router, Server Actions) · React 19 · TypeScript · Tailwind CS
 2. Base de datos (elige una):
    - **Supabase en la nube:** crea un proyecto y ejecuta `supabase link` + `supabase db push`, o pega los archivos de `supabase/migrations/` en el editor SQL en orden.
    - **Local (Docker):** `npx supabase start` (aplica las migraciones automáticamente).
-3. `cp .env.example .env.local` y rellena `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+3. `cp .env.example .env.local` y rellena `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Opcional: `ANTHROPIC_API_KEY` para el plan con IA.
 4. `npm run dev` → http://localhost:3000
 
 Sin variables de entorno, la app muestra `/setup` con estas instrucciones.
@@ -43,7 +43,7 @@ Sin variables de entorno, la app muestra `/setup` con estas instrucciones.
 
 | Comando | Qué prueba |
 |---|---|
-| `npm test` | Lógica de dominio (fechas y zonas horarias, recurrencia, rachas, hábitos, estadísticas, análisis avanzado, gamificación, comparaciones sociales, plan del día y resumen semanal, temporizador, objetivos, Just Start, recomendaciones). |
+| `npm test` | Lógica de dominio (fechas y zonas horarias, recurrencia, rachas, hábitos, estadísticas, análisis avanzado, gamificación, comparaciones sociales, plan del día y resumen semanal (también la validación de la respuesta de la IA), temporizador, objetivos, Just Start, recomendaciones). |
 | `npm run test:db` | Migraciones, RLS, triggers y funciones SQL contra un Postgres real. Requiere `TEST_DATABASE_URL` (un Postgres vacío; **la base se reinicia**). |
 | `npm run test:e2e` | Flujo completo en el navegador contra la app en marcha y un Supabase real: registro, tareas, recurrencia, pomodoro, Just Start, hábitos, notas, objetivos, estadísticas, privacidad entre usuarios, móvil/oscuro. |
 | `npm run lint` / `npm run typecheck` | ESLint y TypeScript. |
@@ -58,6 +58,7 @@ src/app/(app)         dashboard, tasks, focus, habits, notes, goals, stats, prog
 src/components        UI por funcionalidad y primitivos en ui/
 src/lib/domain        lógica pura y testeada
 src/lib/data          consultas de estadísticas (servidor)
+src/lib/ai            proveedor de planificación con Claude (servidor, opcional)
 src/lib/validation    esquemas zod
 supabase/migrations   esquema, RLS, triggers, funciones de estadísticas
 tests/db              pruebas SQL

@@ -18,7 +18,10 @@ export const metadata: Metadata = { title: "Plan" };
 export default async function PlanPage({ searchParams }: { searchParams: Promise<{ week?: string }> }) {
   const { supabase, profile, today } = await requireUser();
   const which: ReviewWeek = (await searchParams).week === "current" ? "current" : "last";
-  const [plan, { review, from, to }] = await Promise.all([getDayPlan(supabase, profile, today), getWeeklyReview(supabase, profile, today, which)]);
+  const [plan, { review, from, to }] = await Promise.all([
+    getDayPlan(supabase, profile, today, { ai: true }),
+    getWeeklyReview(supabase, profile, today, which, { ai: true }),
+  ]);
   const tomorrow = addDays(today, 1);
   const fill = plan.capacityMinutes ? (plan.doneMinutes + plan.plannedMinutes) / plan.capacityMinutes : 0;
 
@@ -117,6 +120,7 @@ export default async function PlanPage({ searchParams }: { searchParams: Promise
           )}
           <p className="text-xs text-muted">
             El plan se recalcula cada vez que entras: urgencia, prioridad, lo que has pospuesto, tu ritmo real y lo que sueles tardar frente a lo que estimas.
+            {plan.source === "ai" && " Lo ordena y redacta Claude (IA) con esos mismos datos; tu ritmo y lo que vence se calculan sin IA."}
           </p>
         </Card>
 
@@ -139,6 +143,7 @@ export default async function PlanPage({ searchParams }: { searchParams: Promise
           <ReviewList title="Lo que salió bien" icon={<ThumbsUp size={14} className="text-success" />} items={review.wins} />
           <ReviewList title="Para mejorar" icon={<TrendingUp size={14} className="text-warning" />} items={review.improve} />
           <ReviewList title={which === "last" ? "Para esta semana" : "Para lo que queda"} icon={<Sparkles size={14} className="text-accent" />} items={review.nextWeek} />
+          {review.source === "ai" && <p className="text-xs text-muted">Redactado por Claude (IA) a partir de tus totales de la semana.</p>}
         </Card>
       </div>
     </div>
