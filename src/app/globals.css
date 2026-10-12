@@ -2,89 +2,301 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ===========================================================================
+   Escape Average — sistema visual
+   - Marca: violeta eléctrico → magenta. Cada sección tiene su "tono" (ver lib/sections.ts).
+   - Tipografía: Bricolage Grotesque (titulares y cifras) + Figtree (texto).
+   - Guía completa en docs/DESIGN.md.
+=========================================================================== */
+
+/* Intensidad de la luz que sigue al cursor (se anima al pasar por encima). */
+@property --spot {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+
 :root {
-  /* Paleta neutra inspirada en las interfaces de Apple; el acento violeta es la marca. */
-  --bg: #f5f5f7;
+  --bg: #f5f4fb;
+  --bg-2: #eceaf7;
   --surface: #ffffff;
-  --surface-2: #f2f2f5;
-  --border: #e3e3e8;
-  --text: #1d1d1f;
-  --muted: #6e6e73;
-  --accent: #5b4bf5;
-  --accent-2: #8b5cf6;
-  --accent-soft: #eeecff;
+  --surface-2: #f1f0f8;
+  --surface-3: #e8e6f3;
+  --border: #e4e2ef;
+  --border-strong: #d3d0e4;
+  --text: #15132b;
+  --muted: #6b6884;
+  --faint: #9b98b2;
+  --accent: #6c4cff;
+  --accent-2: #c74dff;
+  --accent-3: #ff5c8a;
+  --accent-soft: #efebff;
+  --accent-ink: #5434e6;
   --accent-fg: #ffffff;
-  --success: #1f8a3e;
-  --success-soft: #e4f6e9;
-  --warning: #b25f00;
-  --warning-soft: #fff1dc;
-  --danger: #d70f2f;
-  --danger-soft: #ffe8eb;
-  --ring: rgb(91 75 245 / 0.45);
-  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.04), 0 1px 1px rgb(0 0 0 / 0.02);
-  --shadow-md: 0 8px 24px -6px rgb(17 12 46 / 0.1), 0 2px 6px -2px rgb(17 12 46 / 0.06);
-  --shadow-lg: 0 24px 48px -12px rgb(17 12 46 / 0.18);
-  --card: rgb(255 255 255 / 0.74);
-  --card-border: rgb(255 255 255 / 0.7);
+  --success: #12a150;
+  --success-soft: #def7e7;
+  --warning: #c25e00;
+  --warning-soft: #fff0db;
+  --danger: #e11d48;
+  --danger-soft: #ffe4ea;
+  --ring: rgb(108 76 255 / 0.32);
+  --shadow-sm: 0 1px 2px rgb(21 19 43 / 0.05), 0 1px 1px rgb(21 19 43 / 0.03);
+  --shadow-md: 0 1px 0 rgb(255 255 255 / 0.9) inset, 0 10px 30px -12px rgb(40 24 120 / 0.16), 0 2px 6px -2px rgb(40 24 120 / 0.06);
+  --shadow-lg: 0 30px 60px -20px rgb(40 24 120 / 0.28), 0 8px 20px -10px rgb(40 24 120 / 0.12);
+  --card: rgb(255 255 255 / 0.8);
+  --card-border: rgb(255 255 255 / 0.95);
+  --card-edge: rgb(21 19 43 / 0.06);
   --ring-focus: #ff2d6f;
   --ring-focus-2: #ff7aa2;
-  --ring-tasks: #2fc75c;
-  --ring-tasks-2: #9be15d;
+  --ring-tasks: #22c55e;
+  --ring-tasks-2: #a3e635;
   --ring-habits: #0ab3ff;
   --ring-habits-2: #6ae3ff;
-  --mesh-1: rgb(124 92 255 / 0.22);
-  --mesh-2: rgb(255 45 111 / 0.12);
-  --mesh-3: rgb(10 179 255 / 0.14);
+  --mesh-1: rgb(124 92 255 / 0.26);
+  --mesh-2: rgb(255 92 138 / 0.16);
+  --mesh-3: rgb(10 179 255 / 0.16);
+  --mesh-4: rgb(199 77 255 / 0.14);
+  --grid-line: rgb(21 19 43 / 0.045);
+  --grain-opacity: 0.05;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --brand-gradient: linear-gradient(120deg, var(--accent) 0%, var(--accent-2) 55%, var(--accent-3) 100%);
   color-scheme: light;
 }
 
 .dark {
-  --bg: #000000;
-  --surface: #121214;
-  --surface-2: #1c1c1f;
-  --border: #2a2a2e;
-  --text: #f5f5f7;
-  --muted: #98989f;
-  --accent: #8e80ff;
-  --accent-2: #b392ff;
-  --accent-soft: #1f1b3d;
-  --accent-fg: #0a0a0e;
-  --success: #30d158;
-  --success-soft: #0e2a17;
-  --warning: #ffb340;
-  --warning-soft: #2e2210;
-  --danger: #ff6177;
-  --danger-soft: #35141a;
-  --ring: rgb(142 128 255 / 0.55);
-  --card: rgb(24 24 28 / 0.62);
-  --card-border: rgb(255 255 255 / 0.07);
+  --bg: #07060e;
+  --bg-2: #0d0b19;
+  --surface: #12101f;
+  --surface-2: #1b1830;
+  --surface-3: #252140;
+  --border: #262241;
+  --border-strong: #363057;
+  --text: #f4f2ff;
+  --muted: #a19dbd;
+  --faint: #6f6a8f;
+  --accent: #8f78ff;
+  --accent-2: #d685ff;
+  --accent-3: #ff7aa2;
+  --accent-soft: #221b48;
+  --accent-ink: #b9a9ff;
+  --accent-fg: #ffffff;
+  --success: #34d474;
+  --success-soft: #0f2c1c;
+  --warning: #ffb547;
+  --warning-soft: #31230e;
+  --danger: #ff6b8a;
+  --danger-soft: #3a121d;
+  --ring: rgb(143 120 255 / 0.5);
+  --card: rgb(22 19 40 / 0.66);
+  --card-border: rgb(255 255 255 / 0.06);
+  --card-edge: rgb(255 255 255 / 0.05);
   --ring-focus: #ff375f;
   --ring-focus-2: #ff8fab;
   --ring-tasks: #30d158;
   --ring-tasks-2: #b4f569;
   --ring-habits: #0ac2ff;
   --ring-habits-2: #7ae9ff;
-  --mesh-1: rgb(124 92 255 / 0.3);
-  --mesh-2: rgb(255 45 111 / 0.16);
-  --mesh-3: rgb(10 179 255 / 0.16);
-  --shadow-sm: 0 0 0 1px rgb(255 255 255 / 0.02);
-  --shadow-md: 0 8px 24px -6px rgb(0 0 0 / 0.6);
-  --shadow-lg: 0 24px 48px -12px rgb(0 0 0 / 0.7);
+  --mesh-1: rgb(124 92 255 / 0.32);
+  --mesh-2: rgb(255 92 138 / 0.14);
+  --mesh-3: rgb(10 179 255 / 0.14);
+  --mesh-4: rgb(199 77 255 / 0.16);
+  --grid-line: rgb(255 255 255 / 0.035);
+  --grain-opacity: 0.07;
+  --shadow-sm: 0 0 0 1px rgb(255 255 255 / 0.03);
+  --shadow-md: 0 1px 0 rgb(255 255 255 / 0.05) inset, 0 12px 32px -12px rgb(0 0 0 / 0.7);
+  --shadow-lg: 0 30px 60px -20px rgb(0 0 0 / 0.8), 0 0 0 1px rgb(255 255 255 / 0.04);
   color-scheme: dark;
+}
+
+/* ---------------------------------------------------------------------------
+   Tonos por sección. `data-tone` define --tone (principal), --tone-2 (pareja del degradado),
+   --tone-soft (fondo suave) y --tone-ink (texto legible sobre el fondo suave).
+--------------------------------------------------------------------------- */
+:root,
+[data-tone="violet"] {
+  --tone: #7c5cff;
+  --tone-2: #c74dff;
+  --tone-soft: #efeaff;
+  --tone-ink: #5534e6;
+}
+[data-tone="indigo"] {
+  --tone: #4f5bff;
+  --tone-2: #8b7bff;
+  --tone-soft: #e8eaff;
+  --tone-ink: #3540d4;
+}
+[data-tone="blue"] {
+  --tone: #2f6bff;
+  --tone-2: #38bdf8;
+  --tone-soft: #e4eeff;
+  --tone-ink: #1d4fd0;
+}
+[data-tone="sky"] {
+  --tone: #0ea5e9;
+  --tone-2: #6366f1;
+  --tone-soft: #dff4fe;
+  --tone-ink: #0369a1;
+}
+[data-tone="cyan"] {
+  --tone: #06b6d4;
+  --tone-2: #3b82f6;
+  --tone-soft: #dcf7fb;
+  --tone-ink: #0e7490;
+}
+[data-tone="teal"] {
+  --tone: #10b39a;
+  --tone-2: #22d3ee;
+  --tone-soft: #dcf6f0;
+  --tone-ink: #0f766e;
+}
+[data-tone="green"] {
+  --tone: #16a34a;
+  --tone-2: #84cc16;
+  --tone-soft: #e1f6e7;
+  --tone-ink: #15803d;
+}
+[data-tone="lime"] {
+  --tone: #65a30d;
+  --tone-2: #eab308;
+  --tone-soft: #eef8d8;
+  --tone-ink: #4d7c0f;
+}
+[data-tone="amber"] {
+  --tone: #f59e0b;
+  --tone-2: #f43f5e;
+  --tone-soft: #fff3d6;
+  --tone-ink: #b45309;
+}
+[data-tone="orange"] {
+  --tone: #f97316;
+  --tone-2: #facc15;
+  --tone-soft: #ffeddc;
+  --tone-ink: #c2410c;
+}
+[data-tone="coral"] {
+  --tone: #ff4d6d;
+  --tone-2: #ff8a3d;
+  --tone-soft: #ffe5ea;
+  --tone-ink: #d0193f;
+}
+[data-tone="pink"] {
+  --tone: #ec4899;
+  --tone-2: #a855f7;
+  --tone-soft: #fde6f2;
+  --tone-ink: #be185d;
+}
+[data-tone="fuchsia"] {
+  --tone: #c026d3;
+  --tone-2: #6366f1;
+  --tone-soft: #f7e4fa;
+  --tone-ink: #a21caf;
+}
+[data-tone="gold"] {
+  --tone: #d99a06;
+  --tone-2: #f97316;
+  --tone-soft: #fcf2d6;
+  --tone-ink: #9a6400;
+}
+[data-tone="slate"] {
+  --tone: #64748b;
+  --tone-2: #8b5cf6;
+  --tone-soft: #eef0f5;
+  --tone-ink: #475569;
+}
+.dark,
+.dark [data-tone="violet"] {
+  --tone: #9a82ff;
+  --tone-soft: #231b4a;
+  --tone-ink: #c3b6ff;
+}
+.dark [data-tone="indigo"] {
+  --tone: #7f8aff;
+  --tone-soft: #1a1d4a;
+  --tone-ink: #b3baff;
+}
+.dark [data-tone="blue"] {
+  --tone: #5b8cff;
+  --tone-soft: #11244d;
+  --tone-ink: #9fc0ff;
+}
+.dark [data-tone="sky"] {
+  --tone: #38bdf8;
+  --tone-soft: #0b2a3d;
+  --tone-ink: #8ad8fc;
+}
+.dark [data-tone="cyan"] {
+  --tone: #22d3ee;
+  --tone-soft: #082e36;
+  --tone-ink: #7ce8f7;
+}
+.dark [data-tone="teal"] {
+  --tone: #2dd4bf;
+  --tone-soft: #0a2e29;
+  --tone-ink: #7debd9;
+}
+.dark [data-tone="green"] {
+  --tone: #34d474;
+  --tone-soft: #0f2c1b;
+  --tone-ink: #8beeb0;
+}
+.dark [data-tone="lime"] {
+  --tone: #a3e635;
+  --tone-soft: #1f2b0b;
+  --tone-ink: #c9f27e;
+}
+.dark [data-tone="amber"] {
+  --tone: #fbbf24;
+  --tone-soft: #2f2409;
+  --tone-ink: #fcd876;
+}
+.dark [data-tone="orange"] {
+  --tone: #fb923c;
+  --tone-soft: #33190a;
+  --tone-ink: #fdc08f;
+}
+.dark [data-tone="coral"] {
+  --tone: #ff6b85;
+  --tone-soft: #3a1220;
+  --tone-ink: #ffa8b8;
+}
+.dark [data-tone="pink"] {
+  --tone: #f472b6;
+  --tone-soft: #351028;
+  --tone-ink: #f9b4d8;
+}
+.dark [data-tone="fuchsia"] {
+  --tone: #e879f9;
+  --tone-soft: #300f38;
+  --tone-ink: #f2b6fb;
+}
+.dark [data-tone="gold"] {
+  --tone: #f2c14e;
+  --tone-soft: #2d240c;
+  --tone-ink: #f7da8f;
+}
+.dark [data-tone="slate"] {
+  --tone: #94a3b8;
+  --tone-soft: #1d2230;
+  --tone-ink: #cbd5e1;
 }
 
 @theme inline {
   --color-bg: var(--bg);
+  --color-bg-2: var(--bg-2);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
   --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --color-text: var(--text);
   --color-muted: var(--muted);
+  --color-faint: var(--faint);
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
   --color-accent-2: var(--accent-2);
+  --color-accent-3: var(--accent-3);
+  --color-accent-ink: var(--accent-ink);
   --color-accent-fg: var(--accent-fg);
   --color-card: var(--card);
   --color-card-border: var(--card-border);
@@ -97,29 +309,56 @@
   --color-warning-soft: var(--warning-soft);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", ui-sans-serif, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --color-tone: var(--tone);
+  --color-tone-2: var(--tone-2);
+  --color-tone-soft: var(--tone-soft);
+  --color-tone-ink: var(--tone-ink);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
+  --font-sans: "Figtree Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Bricolage Grotesque Variable", "Figtree Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
   --shadow-soft: var(--shadow-sm);
   --shadow-float: var(--shadow-md);
   --shadow-pop: var(--shadow-lg);
-  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
 }
 
+/* ---------------------------------------------------------------------------
+   Base
+--------------------------------------------------------------------------- */
 html {
   background: var(--bg);
   color: var(--text);
 }
 
-/* Fondo con degradados suaves ("mesh"), fijo detrás de todo el contenido. */
+/* Fondo: degradados de color ("mesh") + rejilla muy tenue que se desvanece hacia abajo. */
 body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(55vmax 45vmax at 8% -12%, var(--mesh-1), transparent 62%),
+    radial-gradient(45vmax 38vmax at 100% -4%, var(--mesh-2), transparent 60%),
+    radial-gradient(50vmax 40vmax at 70% 115%, var(--mesh-3), transparent 62%),
+    radial-gradient(40vmax 34vmax at -5% 85%, var(--mesh-4), transparent 60%),
+    linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+}
+/* Grano fino: da textura y evita el aspecto plano de los degradados. */
+body::after {
   content: "";
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background:
-    radial-gradient(60vmax 50vmax at 0% -10%, var(--mesh-1), transparent 60%),
-    radial-gradient(50vmax 40vmax at 100% 0%, var(--mesh-2), transparent 60%),
-    radial-gradient(60vmax 50vmax at 60% 110%, var(--mesh-3), transparent 60%);
+  opacity: var(--grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+}
+.dark body::after {
+  mix-blend-mode: screen;
+  filter: invert(1);
 }
 
 body {
@@ -127,29 +366,36 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  letter-spacing: -0.006em;
 }
 
 h1,
 h2,
+.font-display {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  letter-spacing: -0.025em;
+}
 h3 {
-  letter-spacing: -0.02em;
+  letter-spacing: -0.015em;
 }
 
 ::selection {
-  background: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 25%, transparent);
   color: var(--text);
 }
 
-:focus-visible {
-  outline: 3px solid var(--ring);
-  outline-offset: 2px;
-  border-radius: 10px;
+/* En la capa base: utilidades como focus:outline-none pueden anularlo donde haya un foco propio. */
+@layer base {
+  :focus-visible {
+    outline: 3px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 10px;
+  }
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
+  scrollbar-color: var(--border-strong) transparent;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -157,49 +403,233 @@ h3 {
   font-variant-numeric: tabular-nums;
 }
 
-/* Texto con degradado de marca (titulares destacados). */
+/* Clases del sistema en la capa "components": las utilidades de Tailwind (fixed, hidden, bg-…) las pueden sobrescribir. */
+@layer components {
+/* ---------------------------------------------------------------------------
+   Utilidades de marca
+--------------------------------------------------------------------------- */
+
+/* Texto con degradado de marca. */
 .text-gradient {
-  background: linear-gradient(120deg, var(--accent) 10%, var(--accent-2) 90%);
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+/* Texto con el degradado del tono de la sección. */
+.text-tone-gradient {
+  background: linear-gradient(120deg, var(--tone) 10%, var(--tone-2) 95%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
-/* Tarjeta de cristal: translúcida sobre el fondo degradado. */
-.card-glass {
-  background: var(--card);
-  border: 1px solid var(--card-border);
-  -webkit-backdrop-filter: saturate(160%) blur(24px);
-  backdrop-filter: saturate(160%) blur(24px);
-  box-shadow: var(--shadow-md);
-}
-
-/* Cifra grande con degradado de marca. */
+/* Cifra grande. */
 .num-xl {
+  font-family: var(--font-display);
   font-variant-numeric: tabular-nums;
   font-weight: 700;
-  letter-spacing: -0.035em;
-  line-height: 1;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
 }
 
-/* Superficie translúcida tipo "cristal". */
+/* Tarjeta de cristal: translúcida sobre el fondo, con borde de luz arriba. */
+.card-glass {
+  background-color: var(--card);
+  border: 1px solid var(--card-border);
+  box-shadow: 0 0 0 1px var(--card-edge), var(--shadow-md);
+  -webkit-backdrop-filter: saturate(170%) blur(22px);
+  backdrop-filter: saturate(170%) blur(22px);
+}
+
+/* Superficie translúcida (barras, cabeceras). */
 .glass {
-  background: color-mix(in srgb, var(--surface) 72%, transparent);
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
   backdrop-filter: saturate(180%) blur(20px);
 }
 
-/* Tarjetas que son enlaces: se elevan ligeramente al pasar por encima. */
+/* Tarjeta destacada con el degradado del tono. Los colores de texto internos se adaptan solos. */
+.card-feature {
+  --text: #ffffff;
+  --muted: rgb(255 255 255 / 0.78);
+  --faint: rgb(255 255 255 / 0.6);
+  --border: rgb(255 255 255 / 0.2);
+  --border-strong: rgb(255 255 255 / 0.32);
+  --surface: rgb(255 255 255 / 0.16);
+  --surface-2: rgb(255 255 255 / 0.13);
+  --surface-3: rgb(255 255 255 / 0.2);
+  --accent-soft: rgb(255 255 255 / 0.18);
+  --accent-ink: #ffffff;
+  --tone-soft: rgb(255 255 255 / 0.18);
+  --tone-ink: #ffffff;
+  --card: transparent;
+  position: relative;
+  isolation: isolate;
+  /* clip (no hidden): las decoraciones que se salen no convierten la tarjeta en zona desplazable. */
+  overflow: clip;
+  /* Tono algo más profundo para que el texto blanco se lea bien (más aún en oscuro). */
+  --ft: color-mix(in srgb, var(--tone) 86%, #140d33);
+  --ft2: color-mix(in srgb, var(--tone-2) 88%, #140d33);
+  color: var(--text);
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+  background:
+    radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--ft2) 85%, transparent), transparent 60%),
+    radial-gradient(90% 120% at 0% 100%, color-mix(in srgb, var(--ft) 80%, #000), transparent 70%),
+    linear-gradient(135deg, var(--ft) 0%, color-mix(in srgb, var(--ft) 55%, var(--ft2)) 100%);
+  border: 1px solid rgb(255 255 255 / 0.18);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.35) inset,
+    0 24px 48px -20px color-mix(in srgb, var(--tone) 70%, transparent),
+    0 8px 18px -10px color-mix(in srgb, var(--tone) 50%, transparent);
+}
+.dark .card-feature {
+  --ft: color-mix(in srgb, var(--tone) 62%, #07060e);
+  --ft2: color-mix(in srgb, var(--tone-2) 66%, #07060e);
+  border-color: rgb(255 255 255 / 0.1);
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
+}
+.card-feature::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(rgb(255 255 255 / 0.22) 1px, transparent 1px);
+  background-size: 18px 18px;
+  mask-image: radial-gradient(80% 70% at 85% 10%, #000, transparent 70%);
+  -webkit-mask-image: radial-gradient(80% 70% at 85% 10%, #000, transparent 70%);
+}
+
+/* Tarjeta con tinte del tono (más suave que la destacada). */
+.card-tint {
+  background:
+    radial-gradient(120% 120% at 100% 0%, color-mix(in srgb, var(--tone) 16%, transparent), transparent 55%),
+    var(--card);
+  border: 1px solid color-mix(in srgb, var(--tone) 18%, var(--card-border));
+  box-shadow: 0 0 0 1px var(--card-edge), var(--shadow-md);
+  -webkit-backdrop-filter: saturate(170%) blur(22px);
+  backdrop-filter: saturate(170%) blur(22px);
+}
+
+/* Ficha de icono con el degradado del tono. */
+.tone-chip {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  color: #fff;
+  background: linear-gradient(140deg, var(--tone) 0%, var(--tone-2) 100%);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.35) inset,
+    0 6px 14px -6px color-mix(in srgb, var(--tone) 80%, transparent);
+}
+/* Ficha de icono suave (fondo claro del tono). */
+.tone-chip-soft {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  color: var(--tone-ink);
+  background: var(--tone-soft);
+}
+
+/* Control segmentado: <div class="seg"><button aria-pressed="true">…</button>…</div>. */
+.seg {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-2) 80%, transparent);
+  border: 1px solid var(--border);
+}
+.seg > a,
+.seg > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  white-space: nowrap;
+  transition:
+    background-color 200ms var(--ease-out),
+    color 200ms ease,
+    box-shadow 200ms ease;
+}
+.seg > a:hover,
+.seg > button:hover {
+  color: var(--text);
+}
+.seg > [aria-current="page"],
+.seg > [aria-current="true"],
+.seg > [aria-pressed="true"],
+.seg > [aria-selected="true"],
+.seg > [data-active="true"] {
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+  box-shadow:
+    0 1px 2px rgb(21 19 43 / 0.08),
+    0 0 0 1px var(--card-edge);
+}
+.dark .seg > [aria-current="page"],
+.dark .seg > [aria-current="true"],
+.dark .seg > [aria-pressed="true"],
+.dark .seg > [aria-selected="true"],
+.dark .seg > [data-active="true"] {
+  background: var(--surface-3);
+}
+
+/* Etiqueta pequeña en mayúsculas encima de un título. */
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--tone-ink);
+}
+
+/* Rejilla de puntos decorativa (cabeceras). */
+.dot-grid {
+  background-image: radial-gradient(var(--grid-line) 1.2px, transparent 1.2px);
+  background-size: 16px 16px;
+}
+
+/* ---------------------------------------------------------------------------
+   Interacción
+--------------------------------------------------------------------------- */
+
+/* Luz que sigue al cursor (las coordenadas las pone components/fx/interactions.tsx). */
+.spotlight {
+  --mx: 50%;
+  --my: 0%;
+  background-image: radial-gradient(
+    420px circle at var(--mx) var(--my),
+    color-mix(in srgb, var(--tone) var(--spot), transparent),
+    transparent 60%
+  );
+  transition: --spot 400ms var(--ease-out);
+}
+@media (hover: hover) {
+  .spotlight:hover {
+    --spot: 11%;
+  }
+}
+
+/* Tarjetas que son enlaces: se elevan al pasar por encima. */
 .lift {
   transition:
-    transform 260ms var(--ease-out),
-    box-shadow 260ms var(--ease-out),
+    transform 320ms var(--ease-out),
+    box-shadow 320ms var(--ease-out),
     border-color 200ms ease;
 }
 @media (hover: hover) {
   .lift:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    transform: translateY(-3px);
+    box-shadow: 0 0 0 1px var(--card-edge), var(--shadow-lg);
   }
 }
 .lift:active {
@@ -213,16 +643,97 @@ h3 {
     opacity 160ms ease,
     background-color 160ms ease,
     color 160ms ease,
-    box-shadow 200ms ease;
+    box-shadow 220ms ease,
+    filter 160ms ease;
 }
 .press:active {
-  transform: scale(0.97);
+  transform: scale(0.96);
 }
 
+/* Brillo que cruza el botón principal al pasar por encima. */
+.shine {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(100deg, transparent 20%, rgb(255 255 255 / 0.35) 45%, transparent 60%);
+  transform: translateX(-120%);
+  transition: transform 700ms var(--ease-out);
+  pointer-events: none;
+}
+@media (hover: hover) {
+  .shine:hover::after {
+    transform: translateX(120%);
+  }
+}
+
+/* Aparición al entrar en pantalla (data-reveal) y barras que crecen al verse (reveal-grow), solo con CSS:
+   la animación avanza con el scroll. Con "backwards", al terminar deja de aplicarse (no queda transform
+   ni contexto de apilamiento). Sin soporte o con "reducir movimiento", el contenido se ve sin animación. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    [data-reveal] {
+      animation: reveal-in linear backwards;
+      animation-timeline: view();
+      animation-range: entry 0% entry 55%;
+    }
+    /* data-reveal="<ms>": los elementos de una misma fila entran escalonados. */
+    [data-reveal="60"],
+    [data-reveal="80"],
+    [data-reveal="90"] {
+      animation-range: entry 8% entry 63%;
+    }
+    [data-reveal="120"],
+    [data-reveal="140"],
+    [data-reveal="160"] {
+      animation-range: entry 14% entry 69%;
+    }
+    [data-reveal="180"],
+    [data-reveal="240"] {
+      animation-range: entry 20% entry 75%;
+    }
+    [data-reveal="300"],
+    [data-reveal="360"],
+    [data-reveal="480"] {
+      animation-range: entry 26% entry 81%;
+    }
+    .reveal-grow {
+      animation: bar-in linear backwards;
+      animation-timeline: view();
+      animation-range: entry 20% cover 45%;
+    }
+  }
+}
+
+/* Barras de desplazamiento ocultas (filas de chips o pestañas que se desplazan en horizontal). */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* <select> con flecha propia (la nativa varía entre sistemas). */
+.select-chevron {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a87a3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
+  background-position: right 0.7rem center;
+}
+
+/* ---------------------------------------------------------------------------
+   Animaciones
+--------------------------------------------------------------------------- */
 @keyframes fade-in-up {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -230,13 +741,20 @@ h3 {
   }
 }
 .animate-in {
-  animation: fade-in-up 420ms var(--ease-out) both;
+  animation: fade-in-up 460ms var(--ease-out) both;
+}
+
+@keyframes reveal-in {
+  from {
+    opacity: 0;
+    translate: 0 22px;
+  }
 }
 
 @keyframes page-in {
   from {
     opacity: 0;
-    transform: translateY(14px) scale(0.99);
+    transform: translateY(16px);
     filter: blur(6px);
   }
   to {
@@ -245,8 +763,9 @@ h3 {
     filter: none;
   }
 }
+/* "backwards": al terminar no deja transform ni filter, que convertirían <main> en el contenedor de los position:fixed. */
 .page-in {
-  animation: page-in 560ms var(--ease-out) both;
+  animation: page-in 600ms var(--ease-out) backwards;
 }
 
 @keyframes ring-in {
@@ -260,22 +779,25 @@ h3 {
 
 /* Entrada escalonada de los bloques de una página. */
 .stagger > * {
-  animation: fade-in-up 520ms var(--ease-out) both;
+  animation: fade-in-up 560ms var(--ease-out) both;
 }
 .stagger > *:nth-child(2) {
-  animation-delay: 40ms;
+  animation-delay: 50ms;
 }
 .stagger > *:nth-child(3) {
-  animation-delay: 80ms;
+  animation-delay: 100ms;
 }
 .stagger > *:nth-child(4) {
-  animation-delay: 120ms;
+  animation-delay: 150ms;
 }
 .stagger > *:nth-child(5) {
-  animation-delay: 160ms;
-}
-.stagger > *:nth-child(n + 6) {
   animation-delay: 200ms;
+}
+.stagger > *:nth-child(6) {
+  animation-delay: 250ms;
+}
+.stagger > *:nth-child(n + 7) {
+  animation-delay: 300ms;
 }
 
 @keyframes bar-in {
@@ -285,13 +807,23 @@ h3 {
 }
 .bar-in {
   transform-origin: left center;
-  animation: bar-in 900ms var(--ease-out) both;
+  animation: bar-in 1000ms var(--ease-out) both;
+}
+
+@keyframes grow-up {
+  from {
+    transform: scaleY(0);
+  }
+}
+.grow-up {
+  transform-origin: bottom center;
+  animation: grow-up 900ms var(--ease-out) both;
 }
 
 @keyframes pop-in {
   from {
     opacity: 0;
-    transform: scale(0.96) translateY(6px);
+    transform: scale(0.95) translateY(8px);
   }
   to {
     opacity: 1;
@@ -299,7 +831,7 @@ h3 {
   }
 }
 .pop-in {
-  animation: pop-in 280ms var(--ease-spring) both;
+  animation: pop-in 320ms var(--ease-spring) both;
 }
 
 @keyframes sheet-in {
@@ -309,7 +841,7 @@ h3 {
 }
 @media (max-width: 639px) {
   .sheet-in {
-    animation: sheet-in 360ms var(--ease-out) both;
+    animation: sheet-in 380ms var(--ease-out) both;
   }
 }
 
@@ -320,12 +852,54 @@ h3 {
     transform: scale(1);
   }
   50% {
-    opacity: 0.8;
-    transform: scale(1.05);
+    opacity: 0.85;
+    transform: scale(1.06);
   }
 }
 .animate-glow {
   animation: glow 8s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+/* Esqueleto de carga. */
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-2) 0%, var(--surface-3) 40%, var(--surface-2) 80%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+@keyframes pulse-dot {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--tone) 55%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 10px transparent;
+  }
+}
+/* Punto "en vivo" que late. */
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--tone);
+  animation: pulse-dot 1.6s ease-out infinite;
 }
 
 dialog[open]::backdrop {
@@ -369,8 +943,9 @@ dialog[open]::backdrop {
   }
 }
 .wordmark {
+  font-family: var(--font-display);
   font-weight: 800;
-  letter-spacing: 0.32em;
+  letter-spacing: 0.3em;
 }
 
 @keyframes celebrate-backdrop {
@@ -427,4 +1002,5 @@ dialog[open]::backdrop {
 }
 .celebrate-spark {
   animation: celebrate-spark 1600ms var(--ease-out) both;
+}
 }

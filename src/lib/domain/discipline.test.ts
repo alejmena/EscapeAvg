@@ -219,8 +219,9 @@ describe("frases", () => {
       expect(q.translation.length).toBeGreaterThan(5);
       expect(q.source.length).toBeGreaterThan(5);
     }
-    expect(QUOTES.filter((q) => q.origin === "china").length).toBeGreaterThanOrEqual(15);
-    expect(QUOTES.filter((q) => q.origin === "rusia").length).toBeGreaterThanOrEqual(15);
+    expect(QUOTES.filter((q) => q.origin === "china").length).toBeGreaterThanOrEqual(60);
+    expect(QUOTES.filter((q) => q.origin === "rusia").length).toBeGreaterThanOrEqual(60);
+    expect(new Set(QUOTES.map((q) => q.text)).size).toBe(QUOTES.length);
   });
 
   it("rota cada día y es estable dentro del mismo día", () => {

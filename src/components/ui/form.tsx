@@ -6,7 +6,7 @@ const width = (className?: string) => (className && /(^|\s)w-/.test(className) ?
 const height = (className?: string) => (className && /(^|\s)h-/.test(className) ? "" : "h-10");
 
 const field =
-  "rounded-xl border border-border bg-surface px-3 text-sm text-text placeholder:text-muted/70 transition-[border-color,box-shadow] focus:border-accent focus:shadow-[0_0_0_4px_var(--ring)] focus:outline-none";
+  "rounded-xl border border-border bg-surface/90 px-3.5 text-sm text-text shadow-[0_1px_2px_rgb(21_19_43/0.04)] placeholder:text-faint transition-[border-color,box-shadow,background-color] hover:border-border-strong focus:border-accent focus:bg-surface focus:shadow-[0_0_0_4px_var(--ring)] focus:outline-none";
 
 export const Input = forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(function Input(
   { className, ...props },
@@ -25,11 +25,11 @@ export const Select = forwardRef<HTMLSelectElement, React.SelectHTMLAttributes<H
   { className, ...props },
   ref,
 ) {
-  return <select ref={ref} className={cn(field, width(className), height(className), "pr-8", className)} {...props} />;
+  return <select ref={ref} className={cn(field, "select-chevron", width(className), height(className), "pr-9", className)} {...props} />;
 });
 
 export function Label({ className, ...props }: React.LabelHTMLAttributes<HTMLLabelElement>) {
-  return <label className={cn("block text-xs font-medium text-muted mb-1.5", className)} {...props} />;
+  return <label className={cn("block text-xs font-semibold text-muted mb-1.5", className)} {...props} />;
 }
 
 export function Field({ label, htmlFor, children, hint, className }: {

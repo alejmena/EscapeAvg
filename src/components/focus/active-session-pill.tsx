@@ -13,11 +13,14 @@ export function ActiveSessionPill({ session }: { session: FocusSession }) {
   return (
     <Link
       href="/focus"
-      className="fixed bottom-28 right-4 z-40 flex items-center gap-2 rounded-full bg-text px-4 py-2.5 text-sm font-medium text-bg shadow-lg lg:bottom-6"
+      data-tone="coral"
+      className="press shine fixed bottom-28 right-4 z-40 flex items-center gap-2.5 rounded-full bg-gradient-to-br from-tone to-tone-2 py-2 pl-2.5 pr-4 text-sm font-semibold text-white shadow-[0_16px_32px_-12px_var(--tone)] lg:bottom-6"
     >
-      {session.status === "paused" ? <Pause size={16} /> : <Timer size={16} className="animate-pulse" />}
-      <span className="tabular">{formatClock(shown)}</span>
-      <span className="text-bg/70">{session.kind === "break" ? "Descanso" : session.status === "paused" ? "En pausa" : "Concentrado"}</span>
+      <span className="grid h-7 w-7 place-items-center rounded-full bg-white/20">
+        {session.status === "paused" ? <Pause size={14} /> : <Timer size={14} className="animate-pulse" />}
+      </span>
+      <span className="tabular font-display text-base">{formatClock(shown)}</span>
+      <span className="text-white/80">{session.kind === "break" ? "Descanso" : session.status === "paused" ? "En pausa" : "Concentrado"}</span>
     </Link>
   );
 }

@@ -3,8 +3,8 @@ import { AREAS, IDEAS, IDEA_BY_KEY } from "./catalog";
 import { connections, filterIdeas, floatingSample, isGold, isKeyLevel } from "./ideas";
 
 describe("catálogo de ideas", () => {
-  it("tiene cientos de ideas con claves únicas y valores en rango", () => {
-    expect(IDEAS.length).toBeGreaterThan(400);
+  it("tiene más de 2000 ideas con claves únicas y valores en rango", () => {
+    expect(IDEAS.length).toBeGreaterThan(2000);
     expect(new Set(IDEAS.map((i) => i.key)).size).toBe(IDEAS.length);
     for (const i of IDEAS) {
       expect(i.difficulty, i.key).toBeGreaterThanOrEqual(1);

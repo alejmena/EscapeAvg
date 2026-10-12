@@ -1,4 +1,6 @@
 import type { Metadata, Viewport } from "next";
+import "@fontsource-variable/figtree";
+import "@fontsource-variable/bricolage-grotesque";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -11,8 +13,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f6f6f8" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0a0e" },
+    { media: "(prefers-color-scheme: light)", color: "#f5f4fb" },
+    { media: "(prefers-color-scheme: dark)", color: "#07060e" },
   ],
   width: "device-width",
   initialScale: 1,

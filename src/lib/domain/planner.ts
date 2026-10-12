@@ -57,6 +57,8 @@ export type DayPlan = {
   headline: string;
   tips: string[];
   pendingHabits: { id: string; name: string }[];
+  /** Quién redactó el plan: las reglas o un modelo de lenguaje sobre los mismos datos. */
+  source?: "rules" | "ai";
 };
 
 const DEFAULT_TASK_MIN = 25;
@@ -141,21 +143,33 @@ function blockLabel(start: number) {
   return `${start}:00–${start + 3}:00`;
 }
 
-export function planDay(input: PlanInput): DayPlan {
-  const { today } = input;
-  const cap = dailyCapacity(input.daily, today);
-  const doneMinutes = Math.round((input.daily.find((d) => d.day === today)?.focus_seconds ?? 0) / 60);
+export type RankedTask = { task: PlannerTask; minutes: number; reasons: string[]; mustDo: boolean; score: number };
+
+/** Tareas abiertas ordenadas: primero lo que vence, luego por puntuación y, a igualdad, lo más corto. */
+export function rankTasks(input: Pick<PlanInput, "today" | "tasks" | "estimateRatio">): RankedTask[] {
+  return input.tasks
+    .filter((t) => t.status === "todo" || t.status === "in_progress")
+    .map((t) => {
+      const s = scoreTask(t, input.today);
+      return { task: t, minutes: taskMinutes(t, input.estimateRatio), reasons: s.reasons, mustDo: s.mustDo, score: s.score };
+    })
+    .sort((a, b) => Number(b.mustDo) - Number(a.mustDo) || b.score - a.score || a.minutes - b.minutes);
+}
+
+/** Tu ritmo de hoy, lo ya hecho y lo que queda (con menos margen a última hora). */
+export function dayBudget(input: Pick<PlanInput, "today" | "hour" | "daily">) {
+  const cap = dailyCapacity(input.daily, input.today);
+  const doneMinutes = Math.round((input.daily.find((d) => d.day === input.today)?.focus_seconds ?? 0) / 60);
   // A partir de las 21 h queda poco día: no proponemos más de una hora.
   const lateCap = input.hour >= 21 ? 60 : input.hour >= 18 ? Math.round(cap.minutes * 0.6) : cap.minutes;
   const remaining = Math.max(0, Math.min(lateCap, cap.minutes - doneMinutes));
+  return { cap, doneMinutes, remaining };
+}
 
-  const scored = input.tasks
-    .filter((t) => t.status === "todo" || t.status === "in_progress")
-    .map((t) => {
-      const s = scoreTask(t, today);
-      return { task: t, minutes: taskMinutes(t, input.estimateRatio), reasons: s.reasons, mustDo: s.mustDo, score: s.score, justStart: false };
-    })
-    .sort((a, b) => Number(b.mustDo) - Number(a.mustDo) || b.score - a.score || a.minutes - b.minutes);
+export function planDay(input: PlanInput): DayPlan {
+  const { cap, doneMinutes, remaining } = dayBudget(input);
+
+  const scored = rankTasks(input);
 
   const items: PlanItem[] = [];
   const deferred: PlanItem[] = [];
@@ -236,6 +250,7 @@ export type WeeklyReview = {
   wins: string[];
   improve: string[];
   nextWeek: string[];
+  source?: "rules" | "ai";
 };
 
 const WEEKDAY_NAME = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];

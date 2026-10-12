@@ -54,7 +54,8 @@ export function CountUp({
   // Durante la animación la duración se redondea a minutos enteros, igual que el valor final.
 
   return (
-    <span ref={ref} className={className}>
+    // Cifras de ancho fijo: el número no "baila" mientras cuenta.
+    <span ref={ref} className={className} style={{ fontVariantNumeric: "tabular-nums" }}>
       {format(shown)}
     </span>
   );

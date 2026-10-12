@@ -1,21 +1,28 @@
 import { forwardRef } from "react";
 import { cn } from "@/lib/cn";
 
-type Variant = "primary" | "secondary" | "ghost" | "danger" | "success";
+type Variant = "primary" | "tone" | "inverse" | "secondary" | "ghost" | "danger" | "success";
 type Size = "sm" | "md" | "lg" | "icon";
 
 const variants: Record<Variant, string> = {
+  // Marca: degradado violeta → magenta con brillo al pasar por encima.
   primary:
-    "bg-gradient-to-b from-accent to-accent/90 text-accent-fg shadow-[0_1px_0_rgb(255_255_255/0.2)_inset,0_6px_16px_-6px_var(--accent)] hover:brightness-110",
-  secondary: "bg-surface text-text border border-border shadow-soft hover:bg-surface-2",
+    "shine bg-[image:var(--brand-gradient)] bg-[length:140%_100%] bg-left text-white shadow-[0_1px_0_rgb(255_255_255/0.25)_inset,0_10px_24px_-10px_var(--accent)] hover:bg-right hover:shadow-[0_1px_0_rgb(255_255_255/0.25)_inset,0_14px_30px_-10px_var(--accent-2)] transition-[background-position,box-shadow,transform]",
+  // Color de la sección actual.
+  tone: "shine bg-gradient-to-br from-tone to-tone-2 text-white shadow-[0_1px_0_rgb(255_255_255/0.25)_inset,0_10px_22px_-10px_var(--tone)] hover:brightness-110",
+  // Blanco sobre tarjetas destacadas (card-feature), con el texto en un tono profundo de la sección.
+  inverse:
+    "shine bg-white text-[color:color-mix(in_srgb,var(--tone)_72%,black)] shadow-[0_1px_0_rgb(255_255_255/0.6)_inset,0_12px_26px_-12px_rgb(0_0_0/0.45)] hover:shadow-[0_1px_0_rgb(255_255_255/0.6)_inset,0_16px_32px_-12px_rgb(0_0_0/0.5)]",
+  secondary:
+    "bg-surface/90 text-text border border-border shadow-[0_1px_2px_rgb(21_19_43/0.06)] hover:border-border-strong hover:bg-surface",
   ghost: "text-muted hover:text-text hover:bg-surface-2",
-  danger: "bg-danger-soft text-danger hover:opacity-80",
-  success: "bg-success text-white hover:brightness-110 dark:text-bg",
+  danger: "bg-danger-soft text-danger hover:bg-danger hover:text-white",
+  success: "bg-success text-white shadow-[0_10px_22px_-10px_var(--success)] hover:brightness-110 dark:text-bg",
 };
 
 const sizes: Record<Size, string> = {
-  sm: "h-8 px-3 text-sm gap-1.5 rounded-full",
-  md: "h-10 px-4 text-sm gap-2 rounded-full",
+  sm: "h-8 px-3.5 text-[13px] gap-1.5 rounded-full",
+  md: "h-10 px-4.5 text-sm gap-2 rounded-full",
   lg: "h-12 px-6 text-[15px] gap-2 rounded-full",
   icon: "h-9 w-9 rounded-full justify-center",
 };
@@ -24,7 +31,7 @@ export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & { vari
 
 export function buttonClass(variant: Variant = "primary", size: Size = "md", extra?: string) {
   return cn(
-    "press inline-flex items-center justify-center font-medium disabled:opacity-50 disabled:pointer-events-none select-none",
+    "press inline-flex items-center justify-center font-semibold disabled:opacity-50 disabled:pointer-events-none select-none",
     variants[variant],
     sizes[size],
     extra,

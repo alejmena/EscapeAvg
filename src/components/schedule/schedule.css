@@ -1,0 +1,103 @@
+/* Horario semanal: bloques con el color de su actividad (--c) y línea de "ahora". */
+
+/* Bloque: degradado del color, brillo arriba y sombra del mismo color. */
+.sched-block {
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--c) 78%, #fff) 0%,
+    var(--c) 48%,
+    color-mix(in srgb, var(--c) 86%, #000) 100%
+  );
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.4) inset,
+    0 0 0 1px color-mix(in srgb, var(--c) 80%, #000 20%),
+    0 10px 20px -12px var(--c);
+  transition:
+    transform 240ms var(--ease-out),
+    box-shadow 240ms var(--ease-out),
+    filter 200ms ease;
+}
+.sched-block::before {
+  content: "";
+  position: absolute;
+  inset: 4px auto 4px 3px;
+  width: 3px;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.45;
+}
+@media (hover: hover) {
+  .sched-block:hover {
+    z-index: 5;
+    transform: translateY(-2px);
+    filter: saturate(1.08) brightness(1.04);
+    box-shadow:
+      0 1px 0 rgb(255 255 255 / 0.4) inset,
+      0 0 0 1px color-mix(in srgb, var(--c) 80%, #000 20%),
+      0 18px 28px -14px var(--c);
+  }
+}
+/* El bloque que está ocurriendo ahora: anillo con su color. */
+.sched-block[data-now] {
+  box-shadow:
+    0 0 0 2px var(--surface),
+    0 0 0 4px var(--c),
+    0 14px 28px -12px var(--c);
+}
+
+/* Fila de la lista móvil: tinte suave del color. */
+.sched-row {
+  background:
+    linear-gradient(100deg, color-mix(in srgb, var(--c) 14%, transparent) 0%, transparent 70%),
+    var(--card);
+}
+.sched-row::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--c) 70%, #fff), var(--c));
+}
+
+/* Línea de "ahora". */
+.sched-now {
+  height: 2px;
+  background: linear-gradient(90deg, var(--tone), var(--tone-2));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--tone) 70%, transparent);
+  pointer-events: none;
+}
+.sched-now::before {
+  content: "";
+  position: absolute;
+  left: -5px;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  margin-top: -5px;
+  border-radius: 999px;
+  background: var(--tone);
+  box-shadow: 0 0 0 3px var(--surface);
+  animation: sched-pulse 2s ease-out infinite;
+}
+.sched-now-faint {
+  height: 0;
+  border-top: 1.5px dashed color-mix(in srgb, var(--tone) 40%, transparent);
+  pointer-events: none;
+}
+@keyframes sched-pulse {
+  0% {
+    box-shadow:
+      0 0 0 3px var(--surface),
+      0 0 0 3px color-mix(in srgb, var(--tone) 60%, transparent);
+  }
+  100% {
+    box-shadow:
+      0 0 0 3px var(--surface),
+      0 0 0 12px transparent;
+  }
+}
+
+/* Rejilla: medias horas muy tenues. */
+.sched-half {
+  border-top: 1px dashed var(--grid-line);
+}
