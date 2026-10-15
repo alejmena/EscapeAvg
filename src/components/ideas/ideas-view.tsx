@@ -128,7 +128,7 @@ export function IdeasView({
         title="Ideas para crecer"
         subtitle={
           <>
-            {IDEAS.length} habilidades, libros, idiomas y hábitos para inspirarte. Las <span className="gold-text font-semibold">doradas</span> son las que más te pueden dar. Elige una y ponla en tu horario.
+            {IDEAS.length.toLocaleString("es-MX")} ideas de habilidades, proyectos, libros, idiomas y hábitos para inspirarte. Las <span className="gold-text font-semibold">doradas</span> son las que más te pueden dar. Elige una y ponla en tu horario.
           </>
         }
         action={

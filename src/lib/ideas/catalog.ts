@@ -11,6 +11,9 @@ import { X_SELF } from "./catalog-x-self";
 import { X_LIFE } from "./catalog-x-life";
 import { X_MORE } from "./catalog-x-more";
 import { X_BOOKS } from "./catalog-x-books";
+import { addInspirationIdeas } from "./catalog-inspirations";
+
+const TARGET_IDEA_COUNT = 10_000;
 
 export const AREAS: { key: IdeaArea; label: string; emoji: string; color: string }[] = [
   { key: "lenguas", label: "Idiomas y lenguas", emoji: "🗣️", color: "#0ab3ff" },
@@ -59,5 +62,5 @@ function build(): Idea[] {
   return out;
 }
 
-export const IDEAS: Idea[] = build();
+export const IDEAS: Idea[] = addInspirationIdeas(build(), TARGET_IDEA_COUNT);
 export const IDEA_BY_KEY = new Map(IDEAS.map((i) => [i.key, i]));

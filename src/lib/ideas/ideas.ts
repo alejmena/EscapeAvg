@@ -11,11 +11,24 @@ export function isKeyLevel(i: Pick<Idea, "level">): boolean {
   return i.level === "B1" || i.level === "B2";
 }
 
+const reverseConnections = new Map<string, string[]>();
+for (const idea of IDEAS) {
+  for (const key of idea.complements) {
+    const incoming = reverseConnections.get(key) ?? [];
+    incoming.push(idea.key);
+    reverseConnections.set(key, incoming);
+  }
+}
+
 /** Ideas conectadas: las que esta complementa y las que la citan como complemento. */
 export function connections(key: string, all: Idea[] = IDEAS): Idea[] {
   const own = IDEA_BY_KEY.get(key)?.complements ?? [];
   const set = new Set(own);
-  for (const i of all) if (i.complements.includes(key)) set.add(i.key);
+  if (all === IDEAS) {
+    for (const incoming of reverseConnections.get(key) ?? []) set.add(incoming);
+  } else {
+    for (const i of all) if (i.complements.includes(key)) set.add(i.key);
+  }
   set.delete(key);
   return [...set].map((k) => IDEA_BY_KEY.get(k)).filter((x): x is Idea => !!x);
 }
