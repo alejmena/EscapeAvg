@@ -1,194 +1,198 @@
-/* Ideas: nube flotante sobre la tarjeta destacada, tarjetas del catálogo y distintivos dorado / turquesa. */
-
-@keyframes idea-float {
-  0%,
-  100% {
-    transform: translate(0, 0);
-  }
-  50% {
-    transform: translate(var(--dx, 4px), var(--dy, -10px));
-  }
+/* Ideas: descubrimiento destacado, filtros por área y catálogo adaptable. */
+.ideas-hero-grid {
+  display: grid;
+  gap: 28px;
 }
-/* Entrada al barajar: anima `scale` y `opacity` para no pisar el flotado (que usa `transform`). */
-@keyframes idea-pop {
-  from {
-    opacity: 0;
-    scale: 0.6;
-  }
+.ideas-hero {
+  overflow: clip;
 }
-.idea-bubble {
-  animation:
-    idea-float var(--t, 6s) ease-in-out infinite var(--d, 0s),
-    idea-pop 520ms var(--ease-spring) backwards var(--in, 0ms);
+.ideas-page .ideas-hero {
+  --ft: color-mix(in srgb, var(--tone) 55%, #24120e);
+  --ft2: color-mix(in srgb, var(--tone-2) 68%, #24120e);
+}
+.dark .ideas-page .ideas-hero {
+  --ft: color-mix(in srgb, var(--tone) 42%, #160e0b);
+  --ft2: color-mix(in srgb, var(--tone-2) 52%, #160e0b);
+}
+.ideas-spotlight {
+  border: 1px solid rgb(255 255 255 / 0.3);
+  background: rgb(255 255 255 / 0.05);
+  box-shadow:
+    0 18px 45px -30px rgb(0 0 0 / 0.5),
+    inset 0 1px 0 rgb(255 255 255 / 0.14);
+}
+.ideas-details-chevron {
+  transition: transform 180ms ease;
+}
+.ideas-discovery[open] .ideas-details-chevron {
+  transform: rotate(180deg);
+}
+.ideas-discovery summary::-webkit-details-marker {
+  display: none;
+}
+.idea-suggestion {
   transition:
-    scale 220ms var(--ease-spring),
+    background 160ms ease,
+    border-color 160ms ease;
+}
+.idea-suggestion:hover {
+  background: rgb(255 255 255 / 0.22);
+  border-color: rgb(255 255 255 / 0.65);
+}
+.idea-preset:hover,
+.idea-preset[aria-pressed="true"] {
+  border-color: color-mix(in srgb, var(--tone) 45%, var(--border));
+  background: color-mix(in srgb, var(--tone-soft) 45%, var(--surface));
+}
+.idea-preset[aria-pressed="true"] .idea-preset-icon {
+  color: #fff;
+  background: var(--tone-ink);
+}
+.idea-category {
+  --a: var(--tone);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  max-width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    color 180ms ease;
+}
+.idea-category-count {
+  margin-left: 2px;
+  font-size: 10px;
+  font-weight: 500;
+  opacity: 0.7;
+  font-variant-numeric: tabular-nums;
+}
+.idea-category:hover,
+.idea-category[aria-pressed="true"] {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--a) 50%, var(--border));
+  background: color-mix(in srgb, var(--a) 9%, var(--surface));
+}
+.idea-category[aria-pressed="true"] {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--a) 30%, transparent);
+}
+.idea-category-all[aria-pressed="true"] {
+  color: var(--tone-ink);
+  background: var(--tone-soft);
+}
+.idea-card {
+  min-width: 0;
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform 220ms var(--ease-out),
     box-shadow 220ms ease,
-    background-color 200ms ease;
+    border-color 220ms ease;
+}
+.idea-card-icon,
+.idea-card-link svg {
+  transition: transform 220ms var(--ease-out);
+}
+.idea-card-gold {
+  border-color: color-mix(in srgb, var(--gold) 40%, var(--border));
+}
+.idea-card-key {
+  border-color: color-mix(in srgb, #14b8a6 40%, var(--border));
 }
 @media (hover: hover) {
-  .idea-bubble:hover {
-    scale: 1.07;
+  .idea-card:hover {
+    transform: translateY(-3px);
+    border-color: color-mix(in srgb, var(--a) 55%, var(--border));
+    box-shadow:
+      0 12px 28px -18px color-mix(in srgb, var(--a) 45%, transparent),
+      var(--shadow-md);
+  }
+  .idea-card:hover .idea-card-icon {
+    transform: rotate(-5deg);
+  }
+  .idea-card:hover .idea-card-link svg {
+    transform: translateX(3px);
   }
 }
-
-/* Burbuja normal: píldora clara y nítida sobre el degradado (texto en un tono profundo del color de la sección). */
-.idea-glass {
-  color: color-mix(in srgb, var(--tone) 30%, #1a1206);
-  background: rgb(255 255 255 / 0.9);
-  border-color: rgb(255 255 255 / 0.95);
-  box-shadow:
-    0 1px 0 #fff inset,
-    0 10px 22px -12px rgb(80 30 0 / 0.5);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-}
-.idea-glass:hover {
-  background: #fff;
-}
-.idea-glass .idea-emoji {
-  background: color-mix(in srgb, var(--tone) 16%, #fff);
-}
-
-/* Dorada: degradado de oro con un brillo que cruza de vez en cuando. */
+/* Los distintivos conservan su significado en las dos vistas y en el detalle. */
+.idea-badge-gold,
 .idea-gold {
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(135deg, #fff6d1 0%, #fcd34d 40%, #f59e0b 75%, #d97706 100%);
-  color: #3a2200;
-  border-color: rgb(255 236 170 / 0.95);
-  box-shadow:
-    0 0 0 1px rgb(255 255 255 / 0.45) inset,
-    0 10px 28px -8px rgb(180 83 9 / 0.65);
+  background: linear-gradient(120deg, #fef3c7, #fcd34d);
+  color: #603600;
+  border-color: #f0c456;
 }
-.idea-gold::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.55) 50%, transparent 70%);
-  transform: translateX(-120%);
-  animation: idea-shine 3.6s ease-in-out infinite;
-  animation-delay: var(--d, 0s);
-  pointer-events: none;
-}
-@keyframes idea-shine {
-  0%,
-  55% {
-    transform: translateX(-120%);
-  }
-  100% {
-    transform: translateX(120%);
-  }
-}
-
-/* Turquesa: niveles de idioma clave. */
+.idea-badge-key,
 .idea-key {
-  background: linear-gradient(135deg, #ccfbf1 0%, #2dd4bf 50%, #0d9488 100%);
-  color: #032b26;
-  border-color: rgb(153 246 228 / 0.9);
-  box-shadow:
-    0 0 0 1px rgb(255 255 255 / 0.35) inset,
-    0 10px 24px -8px rgb(13 148 136 / 0.6);
-}
-
-/* Distintivos pequeños. */
-.idea-badge-gold {
-  background: linear-gradient(120deg, #fde68a, #f59e0b);
-  color: #3a2200;
-  box-shadow: 0 4px 10px -4px rgb(217 119 6 / 0.6);
-}
-.idea-badge-key {
-  background: color-mix(in srgb, #14b8a6 16%, transparent);
   color: #0f766e;
+  background: color-mix(in srgb, #14b8a6 13%, var(--surface));
+  border-color: color-mix(in srgb, #14b8a6 45%, var(--border));
 }
-.dark .idea-badge-key {
+.dark .idea-badge-key,
+.dark .idea-key {
   color: #5eead4;
 }
 .gold-text {
   color: var(--gold);
 }
 
-/* Destellos decorativos de la tarjeta destacada. */
-@keyframes idea-twinkle {
-  0%,
-  100% {
-    opacity: 0.15;
-    scale: 0.7;
+@media (min-width: 768px) {
+  .ideas-hero-grid {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.9fr);
+    gap: 36px;
   }
-  50% {
-    opacity: 0.9;
-    scale: 1;
+  .idea-catalog[data-view="list"] .idea-card {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) 200px;
+    align-items: center;
+    gap: 16px 24px;
   }
-}
-.idea-spark {
-  animation: idea-twinkle var(--t, 3s) ease-in-out infinite var(--d, 0s);
-}
-
-/* Chip de área: al pasar por encima, su color. */
-.idea-area {
-  transition:
-    background-color 200ms ease,
-    color 200ms ease,
-    box-shadow 200ms ease,
-    transform 160ms var(--ease-out);
-}
-.idea-area:not([aria-pressed="true"]):hover {
-  color: var(--text);
-  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--a) 55%, transparent);
-  background: color-mix(in srgb, var(--a) 10%, var(--surface));
-}
-.idea-area[aria-pressed="true"] {
-  color: #fff;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--a) 80%, #fff), var(--a));
-  box-shadow: 0 8px 18px -8px var(--a);
-}
-
-/* Tarjeta del catálogo: brillo del color del área al pasar por encima. */
-.idea-card {
-  isolation: isolate;
-}
-.idea-card::before {
-  content: "";
-  position: absolute;
-  top: -40px;
-  right: -40px;
-  z-index: -1;
-  width: 140px;
-  height: 140px;
-  border-radius: 999px;
-  background: var(--a);
-  opacity: 0.1;
-  filter: blur(30px);
-  transition: opacity 300ms ease;
-  pointer-events: none;
-}
-@media (hover: hover) {
-  .idea-card:hover::before {
-    opacity: 0.26;
+  .idea-catalog[data-view="list"] .idea-card-top {
+    display: block;
+    grid-column: 1;
+    grid-row: 1 / 3;
+    align-self: start;
+  }
+  .idea-catalog[data-view="list"] .idea-card-top > span:last-child {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+  }
+  .idea-catalog[data-view="list"] .idea-card-content {
+    grid-column: 2;
+    margin-top: 0;
+  }
+  .idea-catalog[data-view="list"] .idea-card-ratings {
+    grid-column: 3;
+    margin: 0;
+    padding: 28px 0 0;
+  }
+  .idea-catalog[data-view="list"] .idea-card-footer {
+    grid-column: 2 / -1;
   }
 }
-.idea-card-gold {
-  box-shadow:
-    0 0 0 1.5px rgb(245 158 11 / 0.55),
-    0 14px 32px -18px rgb(217 119 6 / 0.7),
-    var(--shadow-md);
+@media (max-width: 639px) {
+  .idea-catalog[data-view="list"] .idea-card {
+    padding: 16px;
+  }
+  .idea-catalog[data-view="list"] .idea-card-excerpt {
+    -webkit-line-clamp: 1;
+  }
+  .idea-catalog[data-view="list"] .idea-card-ratings {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
 }
-.idea-card-gold::after {
-  content: "";
-  position: absolute;
-  inset: 0 0 auto;
-  height: 3px;
-  background: linear-gradient(90deg, #fde68a, #f59e0b, #fde68a);
-  pointer-events: none;
-}
-.idea-card-key {
-  box-shadow:
-    0 0 0 1.5px rgb(20 184 166 / 0.5),
-    0 14px 32px -18px rgb(13 148 136 / 0.6),
-    var(--shadow-md);
-}
-
-/* Fila de chips con desvanecido en los bordes. */
-.idea-scroll-fade {
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 16px, #000 calc(100% - 28px), transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 16px, #000 calc(100% - 28px), transparent);
+@media (prefers-reduced-motion: reduce) {
+  .ideas-page *,
+  .ideas-page *::before,
+  .ideas-page *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }

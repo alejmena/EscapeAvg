@@ -186,14 +186,14 @@ test("ideas: nube flotante, filtros y añadir una idea al horario", async () => 
   await page.getByLabel("Buscar ideas").fill("ingles");
   await expect(page.getByTestId("idea-list")).toContainText("Llegar a B1 en inglés");
   await expect(page.getByText("Niveles del Marco Común Europeo (MCER)")).toBeVisible();
-  await page.getByTestId("idea-list").getByRole("button", { name: /Llegar a B2 en inglés/ }).click();
+  await page.getByTestId("idea-list").getByRole("button", { name: /^Llegar a B2 en inglés/ }).click();
   const dialog = page.getByRole("dialog");
   await expect(dialog).toContainText("Nivel clave B2");
   await dialog.getByRole("button", { name: "Cerrar" }).click();
 
   await page.getByRole("button", { name: "Quitar filtros" }).click();
   await page.getByLabel("Buscar ideas").fill("css moderno");
-  await page.getByTestId("idea-list").getByRole("button", { name: /Aprender CSS moderno/ }).click();
+  await page.getByTestId("idea-list").getByRole("button", { name: /^Aprender CSS moderno/ }).click();
   await expect(dialog).toContainText("Dorada");
   await expect(dialog).toContainText("40 h");
   await snap(page, "4-idea-css", false);

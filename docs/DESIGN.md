@@ -89,6 +89,11 @@ use `spotlight` debe montarlo también (como la portada).
 
 - **Página:** `PageHeader` → (opcional) tarjeta destacada → rejilla de `StatTile` → contenido en tarjetas `glass`.
   Espaciado entre bloques `gap-5`/`space-y-6`; tarjetas `rounded-[26px]`, internas `rounded-2xl`.
+- **Catálogos grandes (Ideas):** una sugerencia destacada, accesos por intención y un buscador con áreas visibles.
+  Los filtros avanzados se despliegan y cada filtro activo se puede quitar por separado. Las tarjetas muestran
+  los primeros pasos; la vista de lista compacta permite comparar. En la tarjeta destacada, profundizar los tonos
+  del degradado cuando sea necesario para mantener legibles los textos pequeños. La inspiración adicional se
+  despliega bajo demanda y no debe cambiar de tamaño mientras se escribe en el buscador.
 - **Listas:** filas `rounded-2xl px-3 py-2.5` con `hover:bg-surface-2/60`, separadas por espacio, no por bordes
   grises. Acciones secundarias visibles al pasar por encima en escritorio, siempre visibles en táctil.
 - **Datos:** el tono de la sección para la serie principal, `--tone-2` para la secundaria; categorías con su color
